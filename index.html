@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>교육활동 침해 판별 도우미</title>
+<style>
+:root{
+  color-scheme: light;
+  --font-main:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕","Noto Sans KR","Nanum Gothic",sans-serif;
+  --bg:#F6F8FB; --card:#FFFFFF; --ink:#18212B; --muted:#5A6573; --faint:#8A95A3; --line:#E2E8F0;
+  --primary:#2160C4; --primary-soft:#EAF1FC;
+  --high:#C2410C; --high-bg:#FFF2E8;
+  --review:#9A6200; --review-bg:#FEF6DE;
+  --no:#5B6676; --no-bg:#F0F3F7;
+  --urgent:#B42318; --urgent-bg:#FEF1F0;
+  --ok:#1F7A5A;
+  --hdr:104px;
+}
+*{box-sizing:border-box}
+[id]{scroll-margin-top:calc(var(--hdr) + 8px)}
+html{font-size:17px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-main);line-height:1.65;word-break:keep-all;overflow-wrap:break-word;font-weight:400}
+button,input,select,textarea{font-family:var(--font-main);font-size:1rem;color:var(--ink)}
+svg.i{width:1.15em;height:1.15em;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+
+/* 머리글과 메뉴 */
+header.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line);box-shadow:inset 0 3px 0 var(--primary)}
+header.top .row1{display:flex;align-items:center;min-height:52px;padding-top:3px}
+.logo{background:none;border:0;padding:6px 0;font-weight:700;font-size:1rem;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
+.logo .mark{width:24px;height:24px;border-radius:7px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff}
+.logo .mark svg{width:15px;height:15px;stroke-width:2.4}
+.topnav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+.topnav::-webkit-scrollbar{display:none}
+.topnav button{flex:0 0 auto;border:0;background:none;border-radius:8px;padding:6px 11px;font-size:.92rem;color:var(--muted);cursor:pointer;font-weight:600}
+.topnav button:hover{background:var(--bg);color:var(--ink)}
+.topnav button.on{background:var(--primary-soft);color:var(--primary)}
+
+main{padding:24px 0 56px}
+main.has-bar{padding-bottom:120px}
+h1{font-size:1.55rem;line-height:1.35;margin:.2em 0 .35em;font-weight:800;letter-spacing:-.025em}
+h2{font-size:1.15rem;line-height:1.4;margin:1.8em 0 .6em;font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.05rem;margin:.2em 0 .3em;font-weight:700}
+p{margin:.3em 0 .8em}
+.lead{color:var(--muted);margin-bottom:1.2em}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+.ref{font-size:.8rem;color:var(--faint);margin-top:8px}
+.ref a{color:inherit;text-decoration:none;border-bottom:1px dotted #B8C2CE}
+.ref a:hover{color:var(--primary)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:12px 0}
+
+/* 긴급 띠 */
+.sos{background:#fff;border:1px solid var(--line);border-left:4px solid var(--urgent);border-radius:12px;padding:12px 16px;margin:4px 0 18px}
+.sos .t{font-weight:700;color:var(--urgent);display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:.95rem}
+.sos .acts{display:flex;flex-wrap:wrap;gap:8px}
+.sos ol{margin:0;padding-left:1.4em;font-size:.95rem}
+.sos ol li{margin:.2em 0}
+.sos ol li b{color:var(--ink)}
+.sos .call112{display:inline-flex;align-items:center;gap:5px;margin-left:6px;padding:3px 12px;border:1px solid var(--urgent);border-radius:8px;color:#fff;background:var(--urgent);font-weight:700;text-decoration:none;font-size:.9rem;vertical-align:1px}
+.sos .after{border-top:1px solid var(--line);margin-top:8px;padding-top:8px;font-size:.9rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+.sos .after a,.sos .after button{background:none;border:0;padding:0;color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:.9rem}
+.sos .acts a,.sos .acts button{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px;border-radius:10px;font-weight:700;text-decoration:none;cursor:pointer;font-size:.95rem;border:1px solid var(--urgent)}
+.sos .acts .r{background:var(--urgent);color:#fff}
+.sos .acts .w{background:#fff;color:var(--urgent)}
+.region{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;font-size:.88rem;color:var(--muted)}
+select{min-height:40px;border:1px solid #CBD5E1;border-radius:8px;padding:4px 10px;background:#fff}
+
+/* 홈 메뉴 */
+.menu{display:grid;gap:10px;margin:16px 0}
+.menu-card{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.menu-card:hover,.menu-card:focus-visible{border-color:var(--primary);box-shadow:0 2px 10px rgba(33,96,196,.08);outline:none}
+.menu-card .ic{width:24px;height:28px;color:var(--primary);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.menu-card .ic svg{width:22px;height:22px}
+.menu-card .t{font-weight:700;display:block;font-size:1.02rem}
+.menu-card .d{color:var(--muted);font-size:.9rem;display:block;margin-top:2px}
+.menu-card.primary{background:var(--primary);border-color:var(--primary);padding:20px;align-items:center}
+.menu-card.primary:hover,.menu-card.primary:focus-visible{background:#1B52AA;box-shadow:0 4px 16px rgba(33,96,196,.25)}
+.menu-card.primary .ic{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);color:#fff}
+.menu-card.primary .t{color:#fff;font-size:1.15rem}
+.menu-card.primary .d{color:#DCE7F8}
+.menu-card .go{margin-left:auto;color:#fff;opacity:.85}
+.menu.sub{grid-template-columns:1fr 1fr;margin-top:0}
+.menu.sub .menu-card{padding:14px}
+@media (max-width:560px){.menu.sub{grid-template-columns:1fr}.menu.sub .menu-card .d{font-size:.85rem}}
+
+/* 버튼 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:10px 18px;border-radius:12px;border:1px solid var(--primary);background:var(--primary);color:#fff;font-weight:700;cursor:pointer;text-decoration:none;font-size:1rem}
+.btn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn.sm{min-height:40px;padding:6px 12px;font-size:.88rem;border-radius:10px}
+.btn:disabled{background:#C9D3E0;border-color:#C9D3E0;color:#fff;cursor:not-allowed}
+.btn.ghost:disabled{background:#fff;color:var(--faint);border-color:var(--line)}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.btn-row .btn{flex:1 1 180px}
+.linkbtn{background:none;border:0;padding:0;color:var(--primary);font-weight:600;cursor:pointer;font-size:.85rem}
+
+/* 하단 고정 막대 */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.97);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom))}
+.bar .wrap{display:flex;gap:10px}
+.bar .btn{min-height:52px}
+.bar .prev{flex:0 0 96px}
+.bar .next{flex:1}
+
+/* 단계 표시 */
+.stages{display:flex;gap:4px;margin:0 0 6px;padding:0;list-style:none}
+.stages li{flex:1;height:4px;border-radius:4px;background:var(--line)}
+.stages li.done{background:var(--primary)}
+.stages li.cur{background:var(--primary);opacity:.45}
+.stage-label{font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.stage-label b{color:var(--primary);font-weight:700}
+.q-title{font-size:1.35rem;font-weight:800;line-height:1.4;margin:18px 0 4px;letter-spacing:-.02em}
+.q-help{color:var(--muted);font-size:.92rem;margin-bottom:10px}
+.editing{font-size:.85rem;background:var(--review-bg);color:var(--review);border-radius:8px;padding:6px 10px;margin-top:10px;display:inline-block}
+
+/* 선택지 */
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:14px 16px;margin:8px 0;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;transition:border-color .12s,background .12s}
+.opt:hover{border-color:#A9C1E8}
+.opt:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.opt .mk{flex:0 0 22px;height:22px;margin-top:2px;border:2px solid #C3CDD9;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff}
+.opt.multi .mk{border-radius:6px}
+.opt.sel{border-color:var(--primary);background:var(--primary-soft)}
+.opt.sel .mk{border-color:var(--primary);background:var(--primary)}
+.opt.sel .mk::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+.opt.multi.sel .mk::after{width:10px;height:6px;border-radius:0;background:none;border:solid #fff;border-width:0 0 2px 2px;transform:rotate(-45deg) translate(1px,-1px)}
+.opt .l{font-weight:600;display:block}
+.opt .s{color:var(--muted);font-size:.88rem;display:block;margin-top:2px}
+.opt.unsure{border-style:dashed}
+.opt.unsure .l{font-weight:500;color:var(--muted)}
+
+/* 접기 */
+details{border:1px solid var(--line);border-radius:12px;background:#fff;margin:8px 0}
+details>summary{cursor:pointer;padding:14px 16px;font-weight:600;display:flex;align-items:center;gap:10px;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"";margin-left:auto;width:8px;height:8px;border:solid var(--faint);border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .15s;flex:0 0 auto}
+details[open]>summary::after{transform:rotate(-135deg)}
+details .inner{padding:0 16px 16px}
+.cnt{font-size:.78rem;font-weight:700;background:var(--primary);color:#fff;border-radius:99px;padding:1px 8px}
+.cnt.zero{background:var(--line);color:var(--muted)}
+
+/* 결과 */
+.assure{display:flex;gap:10px;align-items:flex-start;background:var(--primary-soft);border:1px solid #C9DAF4;border-radius:12px;padding:12px 14px;margin:8px 0 12px;font-size:.95rem}
+.assure svg{color:var(--primary);margin-top:3px}
+.summary{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin:12px 0}
+.summary .big{font-size:1.2rem;font-weight:800;line-height:1.45;letter-spacing:-.01em}
+.assure-line{display:flex;gap:8px;align-items:flex-start;font-size:.86rem;color:var(--muted);background:var(--primary-soft);border-radius:10px;padding:9px 12px;margin:-4px -4px 14px}
+.assure-line svg{color:var(--primary);margin-top:3px}
+.assure-line b{color:var(--ink)}
+.big-chips .chip{font-size:1rem;padding:5px 14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:.85rem;font-weight:600;border-radius:99px;padding:3px 10px}
+.lv-high{background:var(--primary);color:#fff}
+.lv-review{background:#fff;color:var(--primary);box-shadow:inset 0 0 0 1.5px var(--primary)}
+.lv-no{background:var(--no-bg);color:var(--no)}
+.now{border-radius:14px;padding:16px 18px;margin:12px 0;background:#fff;border:1px solid var(--line);border-left:4px solid var(--primary)}
+.now.urgent{background:var(--urgent-bg);border-color:#F4C7C3;border-left-color:var(--urgent)}
+.now h3{display:flex;align-items:center;gap:8px;margin:0 0 6px}
+.now.urgent h3{color:var(--urgent)}
+.now ol{margin:0;padding-left:1.3em}
+.now li{margin:.3em 0}
+.rcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:10px 0}
+.rcard .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.rcard .why{margin:.4em 0 .2em;padding-left:1.1em}
+.rcard .why li{margin:.25em 0}
+.basis{background:var(--bg);border-radius:10px;padding:8px 12px;margin-top:10px;font-size:.86rem}
+.basis .bt{font-weight:600;color:var(--muted);margin-bottom:2px}
+.basis .bl{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:3px 0}
+.basis .bl span{color:var(--ink)}
+.rcard .more{margin-top:10px;font-size:.9rem}
+.rcard .more summary{padding:10px 12px;font-size:.9rem}
+.rcard .more .inner{padding:0 12px 12px}
+.norow{padding:12px 0;border-top:1px solid var(--line)}
+.norow:first-child{border-top:0}
+.norow b{font-weight:600}
+.note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:10px;padding:12px 14px;margin:10px 0;font-size:.95rem}
+.note.gray{border-left-color:var(--no)}
+.ans-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:.92rem}
+.ans-row:first-child{border-top:0}
+.ans-row .q{color:var(--muted);display:block;font-size:.82rem}
+
+/* 용어 풀이 */
+.term{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline dotted #8FA6C9;text-underline-offset:3px;cursor:help}
+#termBox{position:fixed;left:0;right:0;bottom:16px;z-index:60;display:none}
+#termBox.on{display:block}
+#termBox .in{max-width:688px;margin:0 auto;background:#18212B;color:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.25);display:flex;gap:12px;align-items:flex-start}
+#termBox b{display:block;margin-bottom:2px}
+#termBox button{margin-left:auto;background:none;border:0;color:#C9D3E0;cursor:pointer;font-size:1.2rem;line-height:1}
+
+/* 담당자 */
+.casebar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.casebar select{flex:1 1 180px;min-height:44px;font-weight:600}
+.casebar .btn{flex:0 0 auto}
+.kebab{position:relative;border:0;background:none;margin:0}
+.kebab>summary{min-height:40px;min-width:44px;padding:0 10px;border:1px solid var(--line);border-radius:10px;justify-content:center;font-size:1.2rem;line-height:1;background:#fff}
+.kebab>summary::after{display:none}
+.kebab .menu-pop{position:absolute;right:0;top:46px;z-index:15;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(24,33,43,.12);padding:6px;min-width:200px}
+.kebab .menu-pop button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:10px 12px;cursor:pointer;font-size:.92rem}
+.kebab .menu-pop button:hover{background:var(--bg)}
+.kebab .menu-pop .danger{color:var(--urgent);border-top:1px solid var(--line);border-radius:0 0 8px 8px;margin-top:4px}
+.linked{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.linked .chip{font-size:.8rem}
+.linked-acts{margin-left:auto}
+.savehint{font-size:.82rem;margin-top:8px}
+.savehint.dirty{color:var(--review)}
+.today{background:#fff;border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:14px;padding:16px 18px;margin:12px 0}
+.today .lbl{font-size:.82rem;color:var(--muted);font-weight:600}
+.today .what{font-size:1.1rem;font-weight:700;margin:4px 0 8px}
+.dday{display:inline-flex;align-items:center;font-size:.82rem;font-weight:700;border-radius:8px;padding:3px 9px;background:var(--primary-soft);color:var(--primary)}
+.dday.late{background:var(--review-bg);color:var(--review);box-shadow:inset 0 0 0 1px var(--review)}
+.dday.soon{background:var(--review-bg);color:var(--review)}
+.calc .row{display:grid;gap:4px;margin:10px 0}
+.calc label,.fld label{font-weight:600;font-size:.95rem}
+.calc .hint,.fld .hint{font-weight:400;color:var(--muted);font-size:.85rem}
+.calc input,.fld input,.fld textarea,.fld select{width:100%;min-height:48px;border:1px solid #CBD5E1;border-radius:10px;padding:8px 12px;background:#fff}
+.fld textarea{min-height:110px;resize:vertical;line-height:1.6}
+.dtrow{display:flex;gap:8px}
+.dtrow input{flex:1;min-width:0}
+.dtrow .btn{flex:0 0 auto;min-height:48px}
+.calc input:focus,.fld input:focus,.fld textarea:focus{outline:2px solid var(--primary);outline-offset:1px;border-color:var(--primary)}
+.dl-list{margin:12px 0 0}
+.dl-item{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.dl-item:first-child{border-top:0}
+.dl-item .k{font-weight:600}
+.dl-item .s{font-size:.82rem;color:var(--muted);font-weight:400;display:block}
+.dl-item .v{font-weight:700;color:var(--ink);text-align:right;white-space:nowrap}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:16px 0 8px;position:sticky;top:var(--hdr);z-index:5;background:var(--bg);padding:8px 0}
+.tab{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 4px;cursor:pointer;text-align:center;font-size:.82rem;line-height:1.3;color:var(--muted)}
+.tab b{display:block;font-size:1.05rem;color:var(--ink)}
+.tab .tc{display:block;font-size:.72rem;margin-top:2px}
+.tab.on{border-color:var(--primary);background:var(--primary);color:#E3ECFA}
+.tab.on b{color:#fff}
+.tab.full{border-color:var(--ok)}
+.tab.full:not(.on) .tc{color:var(--ok);font-weight:700}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin:8px 0}
+.panel-title{font-size:1.2rem;font-weight:800;letter-spacing:-.01em;margin:0 0 6px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;font-weight:600;border-radius:8px;padding:3px 9px;border:1px solid var(--line);color:var(--muted);background:#fff}
+.tag.date{color:var(--ink);border-color:#CBD5E1}
+.tag.rel{border-color:#A9C1E8;color:var(--primary);background:var(--primary-soft)}
+.todo{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line);cursor:pointer}
+.todo:first-child{border-top:0}
+.todo input{width:22px;height:22px;flex:0 0 22px;margin-top:3px;accent-color:var(--primary);cursor:pointer}
+.todo .tx{flex:1}
+.todo.done .tx .m{color:var(--faint);text-decoration:line-through}
+.todo .sub{display:block;font-size:.86rem;color:var(--muted)}
+.todo .tag.rel{margin-left:6px;font-size:.72rem;padding:1px 6px;vertical-align:1px}
+.panel details{margin-top:6px}
+.forms{font-size:.88rem;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px 12px;margin:12px 0 0}
+.forms .fl{display:flex;gap:8px;align-items:flex-start}
+.forms .fs{margin-top:4px;font-size:.82rem}
+.forms a{color:var(--primary);font-weight:600;text-decoration:none}
+.branch{font-size:.92rem;border-left:3px solid var(--no);background:var(--bg);border-radius:8px;padding:10px 12px;margin:10px 0 0}
+.nav2{display:flex;justify-content:space-between;gap:10px;margin-top:14px}
+.nav2 .btn{min-height:44px;flex:1;font-size:.92rem}
+ul.plain{padding-left:1.1em;margin:.3em 0}
+ul.plain li{margin:.3em 0}
+.kv{border-top:1px solid var(--line);padding:10px 0}
+.kv:first-child{border-top:0}
+.kv b{display:block;font-weight:600}
+.kv span{color:var(--muted);font-size:.92rem}
+
+/* 사건 기록 */
+.inc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:12px 0}
+.inc .ih{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.inc .ih b{font-size:1.05rem}
+.fld{display:grid;gap:4px;margin:12px 0}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;font-size:.92rem;background:#fff}
+.checks input{width:18px;height:18px;accent-color:var(--primary)}
+.checks label:has(input:checked){border-color:var(--primary);background:var(--primary-soft)}
+.doc{background:#fff;border:1px solid #CBD5E1;border-radius:6px;padding:20px;white-space:pre-wrap;font-size:.92rem;line-height:1.7;margin-top:10px;max-height:480px;overflow:auto}
+
+/* 연락처 */
+.call{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.call:first-of-type{border-top:0}
+.call .who{font-weight:600}
+.call .who small{display:block;font-weight:400;color:var(--muted);font-size:.84rem}
+.call a.tel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--primary);color:var(--primary);background:#fff;border-radius:10px;padding:8px 14px;font-weight:700;text-decoration:none;white-space:nowrap;min-height:44px}
+.call a.tel.red{border-color:var(--urgent);color:var(--urgent)}
+.call a.link{color:var(--primary);font-weight:600;text-decoration:none;word-break:break-all;text-align:right}
+
+.footer{margin-top:36px;text-align:center;color:var(--faint);font-size:.75rem;line-height:1.8}
+.footer a{color:var(--muted);font-weight:600}
+.footlink{background:none;border:0;padding:0;font:inherit;color:var(--muted);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.src-list{margin:0;padding-left:1.1em;font-size:.9rem}
+.src-list li{margin:.45em 0}
+.src-list a{color:var(--primary);font-weight:600;text-decoration:none;word-break:keep-all}
+.src-main{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.src-main .btn{flex:0 0 auto}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#18212B;color:#fff;padding:10px 18px;border-radius:10px;font-size:.9rem;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+body.with-bar .modal{position:fixed;inset:0;z-index:70;background:rgba(24,33,43,.45);display:none;align-items:flex-end;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:20px 20px 16px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+@media (min-width:600px){.modal{align-items:center}}
+.modal .mh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.modal .mh h2{margin:0;font-size:1.15rem}
+.modal .mh button{margin-left:auto;background:none;border:0;font-size:1.5rem;line-height:1;color:var(--faint);cursor:pointer;padding:4px 8px}
+.modal dl{margin:8px 0 0}
+.modal dt{font-weight:700;margin-top:14px;font-size:.95rem}
+.modal dd{margin:4px 0 0;color:var(--muted);font-size:.9rem}
+.modal dd a{color:var(--primary);font-weight:600;text-decoration:none}
+.kogl{display:inline-block;font-size:.78rem;font-weight:700;border:1px solid #CBD5E1;border-radius:6px;padding:1px 7px;color:var(--ink);margin:2px 0}
+
+/* 인쇄용 한 장 */
+.preview-note{font-size:.85rem;color:var(--muted)}
+.preview-wrap{overflow-x:auto;background:#E9EDF2;border-radius:12px;padding:12px;margin-top:12px}
+#printSheet{background:#fff;width:186mm;min-height:120mm;margin:0 auto;padding:8mm;font-size:10pt;line-height:1.4;color:#000;font-family:var(--font-main)}
+#printSheet h1{font-size:14pt;margin:0 0 2mm;letter-spacing:-.02em}
+#printSheet .ps-meta{display:flex;flex-wrap:wrap;gap:1mm 8mm;border:1px solid #888;padding:1.5mm 3mm;margin:2mm 0 3mm;font-size:9.5pt}
+#printSheet .ps-grid{column-count:2;column-gap:5mm}
+#printSheet .ps-step{border:1px solid #888;border-radius:2mm;padding:2mm 3mm;margin-bottom:3mm;break-inside:avoid}
+#printSheet .ps-step .h{font-weight:700;display:flex;justify-content:space-between;gap:2mm;border-bottom:1px solid #ccc;padding-bottom:1mm;margin-bottom:1mm}
+#printSheet .ps-step .h span{font-weight:400;font-size:9pt;white-space:nowrap}
+#printSheet .ps-dl{font-size:9.5pt;font-weight:700;margin-bottom:1mm}
+#printSheet ul{margin:0;padding:0;list-style:none}
+#printSheet li{margin:.4mm 0;padding-left:4.5mm;text-indent:-4.5mm}
+#printSheet .ps-f{font-size:8.5pt;color:#333;margin-top:1mm}
+#printSheet .ps-bottom{border:1px solid #888;border-radius:2mm;padding:2mm 3mm;font-size:9pt;line-height:1.5}
+#printSheet .ps-src{font-size:8pt;color:#444;margin-top:2mm}
+
+@media (max-width:560px){
+  html{font-size:16px}
+  h1{font-size:1.4rem}
+  .q-title{font-size:1.25rem}
+  .tab{font-size:.75rem;padding:7px 2px}
+  .tab .lbl{display:none}
+  .dl-item{flex-direction:column;gap:2px}
+  .dl-item .v{text-align:left;white-space:normal}
+  .call{flex-wrap:wrap}
+}
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  body *{visibility:hidden}
+  .print-area,.print-area *{visibility:visible}
+  .print-area{position:absolute;left:0;top:0;width:100%;margin:0;border:0;max-height:none;overflow:visible}
+  #printSheet{padding:0}
+  .doc.print-area{font-size:10.5pt;padding:0}
+  header.top,.toast,.bar,#termBox,.copy-btn,.modal{display:none!important}
+}
+</style>
+</head>
+<body>
+<header class="top" id="hdr">
+  <div class="wrap">
+    <div class="row1"><button class="logo" data-action="home" aria-label="처음 화면으로"><span class="mark" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/></svg></span><span>교육활동 침해 판별 도우미</span></button></div>
+    <nav class="topnav" aria-label="주 메뉴">
+      <button data-action="startCheck" data-nav="check">점검</button>
+      <button data-action="nav" data-to="record" data-nav="record">기록</button>
+      <button data-action="nav" data-to="teacher" data-nav="teacher">피해 교원</button>
+      <button data-action="nav" data-to="guide" data-nav="guide">담당자</button>
+      <button data-action="nav" data-to="types" data-nav="types">유형</button>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="app" tabindex="-1"></main>
+<div id="termBox" role="dialog" aria-live="polite"><div class="in"><div id="termTxt"></div><button data-action="closeTerm" aria-label="닫기">×</button></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="modal" id="copyModal" role="dialog" aria-modal="true" aria-labelledby="copyTitle"><div class="box" id="copyBox"></div></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+
+<script>
+/* =========================================================
+   기준 정보 — 매뉴얼이 개정되거나 내용을 다시 점검하면 이 블록을 고치세요.
+   ========================================================= */
+const LAST_CHECKED = '2026. 10. 2.';
+const MANUAL = {
+  title: '교육활동 보호 매뉴얼',
+  edition: '2026 일부개정',
+  pages: {
+    flow: 7, protect: '37~40', emergency: 39, separate: 40, report: '41~43',
+    caution: '42~43', committee: '45~49', close: '57~58', appeal: '59~61',
+    dispute: '62~65', support: '68~76', leave: 71, center: '75~76',
+    legal: '77~79', childAbuse: '80~83', mutual: '84~85', other: 86, scope: '2~5',
+    forms: '124'
+  }
+};
+function ref(pageKey, extra){ const p = typeof pageKey === 'number' ? pageKey : (MANUAL.pages[pageKey] ?? pageKey); return `${MANUAL.title}(${MANUAL.edition}) ${extra ? extra + ' ' : ''}${p}쪽`; }
+const FORMS_LINK = 'https://forteacher.kedi.re.kr';
+/* 출처 원문 — 매뉴얼이 개정되면 주소와 판 정보를 함께 고치세요. */
+const SOURCE = {
+  publisher: '교육부',
+  title: '교육활동 보호 매뉴얼(2026 일부개정)',
+  series: '수탁연구자료 CRM 2026-09',
+  kogl: '공공누리 제2유형(출처표시+상업적 이용금지)',
+  url: 'https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=327&boardSeq=105492&lev=0&searchType=null&statusYN=W&page=1&s=moe&m=0305&opType=N_'
+};
+const SOURCE_TEXT = `${SOURCE.publisher}, 「${SOURCE.title}」(${SOURCE.series})`;
+const UNOFFICIAL = '이 사이트는 교육부·교육청의 공식 서비스가 아닙니다. 공개된 매뉴얼을 바탕으로 개인이 만든 참고용 도구입니다.';
+
+/* =========================================================
+   공휴일 목록 (관공서 공휴일, 대체공휴일 포함)
+   - 2026년부터 노동절(5/1)·제헌절(7/17) 공휴일 지정 반영
+   - 임시공휴일이 새로 지정되면 아래 목록에 'YYYY-MM-DD'로 추가하세요.
+   ========================================================= */
+const HOLIDAYS = {
+  '2026-01-01':'신정','2026-02-16':'설날 연휴','2026-02-17':'설날','2026-02-18':'설날 연휴',
+  '2026-03-01':'삼일절','2026-03-02':'대체공휴일(삼일절)','2026-05-01':'노동절','2026-05-05':'어린이날',
+  '2026-05-24':'부처님오신날','2026-05-25':'대체공휴일(부처님오신날)','2026-06-03':'전국동시지방선거',
+  '2026-06-06':'현충일','2026-07-17':'제헌절','2026-08-15':'광복절','2026-08-17':'대체공휴일(광복절)',
+  '2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴','2026-10-03':'개천절',
+  '2026-10-05':'대체공휴일(개천절)','2026-10-09':'한글날','2026-12-25':'성탄절',
+  '2027-01-01':'신정','2027-02-06':'설날 연휴','2027-02-07':'설날','2027-02-08':'설날 연휴',
+  '2027-02-09':'대체공휴일(설날)','2027-03-01':'삼일절','2027-05-01':'노동절','2027-05-03':'대체공휴일(노동절)',
+  '2027-05-05':'어린이날','2027-05-13':'부처님오신날','2027-06-06':'현충일','2027-07-17':'제헌절',
+  '2027-07-19':'대체공휴일(제헌절)','2027-08-15':'광복절','2027-08-16':'대체공휴일(광복절)',
+  '2027-09-14':'추석 연휴','2027-09-15':'추석','2027-09-16':'추석 연휴','2027-10-03':'개천절',
+  '2027-10-04':'대체공휴일(개천절)','2027-10-09':'한글날','2027-10-11':'대체공휴일(한글날)',
+  '2027-12-25':'성탄절','2027-12-27':'대체공휴일(성탄절)'
+};
+const HOLIDAY_YEARS = [2026, 2027];
+
+/* =========================================================
+   시·도 교육활동보호센터 (매뉴얼 75~76쪽, 2026년 1월 기준)
+   ========================================================= */
+const REGIONS = [
+  {id:'seoul', n:'서울', area:'02', center:'서울 교육활동보호센터', tel:'02-399-9702', site:'https://www.sen.go.kr'},
+  {id:'busan', n:'부산', area:'051', center:'부산 교육활동보호센터', tel:'051-862-1122', site:'https://www.pen.go.kr'},
+  {id:'daegu', n:'대구', area:'053', center:'대구 교육권보호센터', tel:'053-231-0540', site:'http://www.dge.go.kr/forteacher/'},
+  {id:'incheon', n:'인천', area:'032', center:'인천 교육활동보호센터', tel:'032-550-1772', site:'http://www.ice.go.kr'},
+  {id:'gwangju', n:'광주', area:'062', center:'학교지원센터(서부·동부 교육활동보호센터)', tel:'1644-9575', site:'http://forteacher.gen.go.kr'},
+  {id:'daejeon', n:'대전', area:'042', center:'에듀힐링센터(대전 교육활동보호센터)', tel:'042-713-9372', site:'https://www.dje.go.kr/eduhealingnew/main.do'},
+  {id:'ulsan', n:'울산', area:'052', center:'울산 교육활동보호센터', tel:'052-243-8721', site:'https://www.use.go.kr'},
+  {id:'sejong', n:'세종', area:'044', center:'세종 교육활동보호센터', tel:'1522-9575', site:'https://www.sje.go.kr/forteacher'},
+  {id:'gyeonggi', n:'경기', area:'031', center:'경기교권보호지원센터', tel:'1600-8787', site:'https://more.goe.go.kr/eapc'},
+  {id:'gangwon', n:'강원', area:'033', center:'강원 교육활동보호센터', tel:'033-259-0819', site:'http://www.gwe.go.kr/'},
+  {id:'chungbuk', n:'충북', area:'043', center:'충북 교육활동보호센터', tel:'043-290-2251', site:'https://www.cbe.go.kr/dept-26'},
+  {id:'chungnam', n:'충남', area:'041', center:'충남 교육활동보호센터', tel:'1588-9331', site:'http://www.cne.go.kr'},
+  {id:'jeonbuk', n:'전북', area:'063', center:'전북교육인권센터(교육활동보호센터)', tel:'063-237-0343', site:'https://www.jbe.go.kr/human/index.jbe'},
+  {id:'jeonnam', n:'전남', area:'061', center:'전남 교육활동보호센터', tel:'061-260-0531', site:'https://www.jne.go.kr/thsupport/main.do'},
+  {id:'gyeongbuk', n:'경북', area:'054', center:'경북 교육활동보호센터', tel:'054-450-4363', site:'http://www.gbe.kr'},
+  {id:'gyeongnam', n:'경남', area:'055', center:'경남행복교권드림센터(교육활동보호센터)', tel:'1811-7679', site:'https://www.gne.go.kr/forteacher'},
+  {id:'jeju', n:'제주', area:'064', center:'제주 교육활동보호센터', tel:'1599-9179', site:'https://www.jje.go.kr/forteacher'}
+];
+const regionOf = id => REGIONS.find(r=>r.id===id) || null;
+const hotline = r => r ? `${r.area}-1395` : '지역번호+1395';
+
+/* ========== 아이콘 ========== */
+const IC = {
+  search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  list:'<path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 6l1.2 1.2L7.5 5M4 12l1.2 1.2L7.5 11M4 18l1.2 1.2L7.5 17"/>',
+  heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  book:'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/>',
+  pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  phone:'<path d="M5 4h3l2 5-2 1.2a11 11 0 0 0 5.8 5.8L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  print:'<path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  alert:'<path d="M12 3.5l9 16H3z"/><path d="M12 10v4M12 17v.01"/>',
+  doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>',
+  reset:'<path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v4h4"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/>',
+  shield:'<path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  save:'<path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/>',
+  upload:'<path d="M12 20V9M7 14l5-5 5 5"/><path d="M5 4h14"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  arrowL:'<path d="M15 6l-6 6 6 6"/>',
+  arrowR:'<path d="M9 6l6 6-6 6"/>'
+};
+const ic = (n, cls='') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+
+/* ========== 용어 풀이 ========== */
+const GLOSS = {
+  '지역교권보호위원회':'교육지원청에 두는 위원회입니다. 교육활동 침해행위인지와 학생·보호자에 대한 조치를 최종 심의합니다.',
+  '공연성':'여러 사람이 알 수 있는 상태를 말합니다. 한 사람에게 말했더라도 다른 사람에게 퍼질 가능성이 있으면 인정될 수 있습니다.',
+  '위계':'상대를 속이거나 착각하게 만들어 그것을 이용하는 것입니다.',
+  '위력':'사람의 자유로운 의사를 누를 만한 힘입니다. 폭행·협박뿐 아니라 사회적·경제적 지위를 이용한 압박도 포함됩니다.',
+  '구상':'교육청이 먼저 낸 비용을 나중에 실제 책임이 있는 사람(보호자 등)에게 청구하는 것입니다.',
+  '추인':'학교장이 먼저 한 긴급조치를 나중에 위원회가 인정하는 것입니다.',
+  '친고죄':'피해자가 직접 고소해야 처벌할 수 있는 범죄입니다. 모욕죄가 대표적입니다.',
+  '분리조치':'침해 관련자와 피해 교원을 일정 기간 떨어뜨려 놓는 조치입니다. 피해 교원이 반대하지 않으면 학교장이 즉시 해야 합니다.',
+  '중대사안':'교육부에 즉시 보고해야 하는 심각한 사안입니다. 사망·4주 이상 치료 진단, 성폭력범죄 등이 해당합니다.',
+  '분쟁조정':'위원회가 양측 사이에서 대화와 합의를 돕는 절차입니다. 양측이 모두 원해야 시작하며, 개시 후 30일 안에 합의되지 않으면 심의로 넘어갑니다.',
+  '무고':'징계나 처벌을 받게 할 목적으로 거짓 사실을 신고하는 범죄입니다.',
+  '손괴':'물건이나 자료를 부수거나 숨겨서 쓸 수 없게 만드는 것입니다.',
+  '행정심판':'교육장의 처분에 이의가 있을 때 교육청 행정심판위원회에 다시 판단해 달라고 청구하는 제도입니다.',
+  '학교장 통고제':'학교장이 만 10세 이상 19세 미만 학생을 법원 소년부에 직접 알리는 제도입니다. 형사처벌이 아니어서 전과가 남지 않습니다.',
+  '음성권':'자기 목소리가 동의 없이 녹음되거나 이용되지 않을 권리입니다.',
+  '긴급조치':'상해·폭행이나 성폭력범죄일 때 학교장이 위원회 결정 전에 학생에게 먼저 내리는 조치입니다.'
+};
+const GLOSS_KEYS = Object.keys(GLOSS).sort((a,b)=>b.length-a.length);
+function gl(html){
+  let out = html; const used = new Set();
+  GLOSS_KEYS.forEach(k=>{
+    if(used.has(k)) return;
+    const i = out.indexOf(k); if(i<0) return;
+    const before = out.slice(0,i);
+    if(before.lastIndexOf('<') > before.lastIndexOf('>')) return; // 태그 안이면 건너뜀
+    if(/<button class="term"[^>]*>[^<]*$/.test(before)) return;
+    out = before + `<button class="term" data-term="${k}">${k}</button>` + out.slice(i+k.length);
+    used.add(k);
+  });
+  return out;
+}
+
+/* =========================================================
+   교육활동 침해행위 16개 유형 (매뉴얼 Ⅴ장)
+   ========================================================= */
+const TYPES = {
+  1:{name:'공무집행방해·업무방해', law:'「형법」 제2편 제8장, 제314조', page:90,
+     concept:'직무 중인 국·공립학교 교원을 폭행·협박하거나 위계로 직무를 방해하면 공무집행방해, 사립학교 교원의 업무를 거짓 소문·위계·위력으로 방해하면 업무방해입니다.',
+     example:'보호자가 수업 중 교실에 들어와 학생들을 불러내 무릎 꿇리고, 말리는 교사를 위협해 수업을 방해한 경우',
+     cases:'등교지도 중 하차 금지 구역에서 내린 학생을 지도하자, 보호자가 거세게 항의하며 흉기로 해치겠다는 말을 한 사례 → 해당할 수 있음'},
+  2:{name:'무고', law:'「형법」 제2편 제11장(제156조)', page:91,
+     concept:'징계나 형사처분을 받게 할 목적으로 거짓 사실을 수사기관·교육청 등에 신고하는 것입니다. 정황을 부풀린 정도는 해당하지 않으며, 거짓이라는 적극적인 증명이 있어야 합니다.',
+     example:'CCTV로 학대가 없었음을 확인하고도 고소한 경우, 요구한 적 없는 촌지를 요구했다며 국민신문고에 징계를 요청한 경우',
+     cases:'학생 진술과 무혐의 처분으로 거짓임이 드러났는데도 같은 내용으로 징계 민원을 계속 낸 사례 → 해당할 수 있음'},
+  3:{name:'상해·폭행', law:'「형법」 제2편 제25장', page:92,
+     concept:'상해는 신체의 건강이나 기능을 해치는 것(지속된 폭언으로 생긴 정신 질환 포함), 폭행은 신체에 불법적인 힘을 쓰는 것입니다. 맞지 않았더라도 가까이서 휘두르거나 던지면 폭행입니다.',
+     example:'뺨을 때려 고막이 손상된 경우(상해), 멱살을 잡은 경우, 교원을 향해 물건을 던진 경우(폭행)',
+     cases:'휴대전화를 분리 보관하자 학생이 의자를 교사 쪽으로 던졌고 의자는 비켜 간 사례 → 폭행에 해당할 수 있음'},
+  4:{name:'협박', law:'「형법」 제2편 제30장', page:93,
+     concept:'일반적으로 공포심을 일으킬 만큼 구체적인 해악을 알리는 것입니다. 말뿐 아니라 행동으로도 가능하고, 실제로 할 생각이 없었어도 성립할 수 있습니다. 고소·민원 예고만으로는 협박이 아닙니다.',
+     example:'집 주소를 안다며 해치겠다고 소리친 경우, 가족을 해치겠다는 문자를 보낸 경우, 요구를 들어주지 않으면 교문 앞에서 자해하겠다고 소동을 피운 경우',
+     cases:'폭언을 섞거나 확인되지 않은 일로 고소하겠다고 위협하면 권리 남용으로 협박이 될 수 있음(매뉴얼 Q&A)'},
+  5:{name:'명예훼손·모욕', law:'「형법」 제2편 제33장', page:94,
+     concept:'명예훼손은 사실(진실이든 거짓이든)을 드러내 사회적 평가를 떨어뜨리는 것, 모욕은 사실 없이 욕설·경멸 표현을 하는 것입니다. 둘 다 공연성이 있어야 성립합니다.',
+     example:'교사가 학생 몸을 만졌다는 거짓 소문, 외모를 비하하는 별명, 여러 학생 앞에서 한 욕설, SNS에 올린 욕설',
+     cases:'교사가 시험 문제를 빼돌렸다는 거짓 소문을 반에 퍼뜨린 사례(명예훼손), 주의를 받은 학생이 다른 학생들 앞에서 욕설을 하고 혼잣말이었다고 한 사례(모욕) → 해당할 수 있음'},
+  6:{name:'손괴', law:'「형법」 제2편 제42장', page:96,
+     concept:'물건·문서·전자기록을 부수거나 숨기는 등의 방법으로 쓸 수 없게 만드는 것입니다. 잠시 쓸 수 없게 만든 것도 포함됩니다.',
+     example:'지도에 반항하며 책상·창문·TV를 부순 경우, 출석부·교무수첩을 찢은 경우, 교원이 만든 컴퓨터 파일을 일부러 지운 경우',
+     cases:''},
+  7:{name:'성폭력범죄', law:'「성폭력범죄의 처벌 등에 관한 특례법」 제2조제1항', page:97,
+     concept:'강제추행, 공연음란, 카메라 등을 이용한 촬영, 통신매체를 이용한 음란행위, 허위영상물(합성) 등입니다. 2024년 10월 16일부터 성적 합성물은 유포 목적이 없어도, 불법촬영물은 보거나 갖고만 있어도 처벌됩니다.',
+     example:'교원의 신체를 몰래 촬영한 경우, 교원 사진으로 성적 합성물을 만들어 게시한 경우, 음란물을 교원 휴대전화로 보낸 경우',
+     cases:'학생들이 역할을 나눠 여러 교원을 몰래 촬영한 사건에서, 촬영물을 보거나 갖고만 있었던 학생도 해당할 수 있다고 본 사례'},
+  8:{name:'불법정보 유통', law:'「정보통신망법」 제44조의7제1항', page:98,
+     concept:'정보통신망으로 음란한 정보, 비방할 목적의 명예훼손 정보, 공포심·불안감을 주는 내용을 반복해 보내는 것 등입니다.',
+     example:'원격수업 중 음란한 소리를 튼 경우, 인터넷 게시판에 교원에 대한 거짓 비방 글을 올린 경우, 불안감을 주는 문자를 반복해 보낸 경우',
+     cases:'진단서 제출 요청은 거부하고 인터넷 카페에 교사를 특정해 거짓 글을 올린 사례, 괴로움을 호소하며 압박하는 문자를 한 달 넘게 수십 차례 보낸 사례 → 해당할 수 있음'},
+  9:{name:'그 밖의 형사처벌 범죄', law:'「교원지위법」 제19조제1호라목 (스토킹처벌법, 통신비밀보호법 등)', page:100,
+     concept:'다른 법률에서 형사처벌하는 행위로서 교육활동을 직접 방해하는 것입니다. 강요, 스토킹, 몰래 녹음(통신비밀보호법 위반), 퇴거불응 등이 해당할 수 있습니다.',
+     example:'담임교사 주소를 알아내 불안감을 느끼도록 쫓아다닌 경우, 보호자가 자녀 가방에 녹음기를 넣어 수업을 녹음한 경우',
+     cases:'보호자가 몰래 녹음한 수업 발언을 근거로 항의를 반복한 사례 → 수업 중 발언은 ‘공개되지 않은 타인 간의 대화’이므로 해당할 수 있음(대법원 2024. 1. 11. 선고 2020도1538)'},
+  10:{name:'목적이 정당하지 않은 민원 반복', law:'「교원지위법」 제19조제2호가목', page:102,
+     concept:'정당한 의견 제시를 넘어, 교원을 괴롭히거나 특혜를 얻으려는 등 부당한 목적으로 민원을 반복하는 것입니다.',
+     example:'교사의 수업 내용·교원단체 가입 여부·출장·연수 내역을 반복 요구한 경우, 자녀에 대한 모든 지도를 하지 말라는 민원을 반복한 경우',
+     cases:'학생이 다친 뒤 앞으로 어떤 지도도 하지 말라는 민원을 반복한 사례 → 해당할 수 있음'},
+  11:{name:'법적 의무가 아닌 일 지속 강요', law:'「교원지위법」 제19조제2호나목', page:103,
+     concept:'교사의 직무 범위나 교육과정에 없는 일을 계속 강요하는 것입니다.',
+     example:'아이 취향에 맞춘 급식을 따로 요구한 경우, 매일 학교에서 있었던 모든 일을 보고하라고 요구한 경우, 배상 책임이 없는 교사 개인에게 손해배상을 계속 요구한 경우',
+     cases:'학교안전공제 급여가 지급되었는데도 담임에게 치료비·위자료 등을 계속 요구한 사례 → 교원에게 고의·중과실이 없으면 배상 책임은 국가 등에 있으므로 해당할 수 있음'},
+  12:{name:'성적 언동', law:'「교육활동 침해행위 및 조치 기준에 관한 고시」 제2조제2호', page:104,
+     concept:'같은 처지의 평균적인 사람이 성적 굴욕감·혐오감을 느낄 만한 신체적·언어적·시각적 행위입니다. 행위자에게 성적인 의도가 없어도 성립할 수 있습니다.',
+     example:'동의 없이 몸을 밀착시키는 행위, 성적인 농담이나 신체 평가, 교원이 볼 수 있는 곳에 음란한 사진을 두는 행위',
+     cases:''},
+  13:{name:'반복적 부당 간섭', law:'같은 고시 제2조제3호', page:105,
+     concept:'자격과 전문성을 갖춘 교원의 교육적 판단과 활동에 반복적으로 부당하게 간섭해 교육활동의 정상적 운영을 방해하는 것입니다.',
+     example:'교체할 사정이 없는데 담임 교체를 계속 요구한 경우, 지각 처리·학교생활기록부 내용을 반복 요구한 경우, 시험 범위를 줄이라고 반복 요구한 경우',
+     cases:'수업을 방해한 학생을 뒷자리로 옮겨 수업에 참여하게 하자 아동학대라며 담임 교체 민원을 반복한 사례 → 해당할 수 있음(대법원 2023. 9. 14. 선고 2023두37858)'},
+  14:{name:'의도적 교육활동 방해', law:'같은 고시 제2조제4호', page:106,
+     concept:'정당한 생활지도에 따르지 않고 일부러 교육활동을 방해하는 것입니다. 방해 결과를 개의치 않는 태도도 의도로 볼 수 있으며, 나이·행동·반복·지속성·전후 정황을 종합해 판단합니다. 단순한 불응은 생활지도 대상입니다.',
+     example:'중단 지시에도 교실을 돌아다니거나 바닥에 눕는 경우, 지도해도 교사의 말과 행동을 따라 하며 방해하는 경우',
+     cases:'반복된 지도에도 돌아다니고 드러누워 노래한 사례 → 해당할 수 있음 / 지도에 따라 과자를 넣었다가 소리 없이 다시 먹은 사례 → 해당하지 않음(지도 대상)'},
+  15:{name:'영상·음성 무단 배포', law:'같은 고시 제2조제5호', page:107,
+     concept:'교육활동 중인 교원의 영상·사진·음성을 촬영·녹화·녹음·합성해 무단으로 퍼뜨리는 것입니다.',
+     example:'원격수업 중 교사의 일부 발언만 녹음해 단체방에 올린 경우, 수업 모습을 몰래 찍어 합성해 SNS에 올린 경우, 게임 프로필 사진으로 쓴 경우',
+     cases:'학생이 수업 발언을 녹음해 SNS에 올린 사례 → 학생은 대화 상대라 녹음 자체는 범죄가 아니지만, 배포는 해당할 수 있음'},
+  16:{name:'학교장이 판단하는 침해행위', law:'같은 고시 제2조제6호, 「교육공무원법」 제43조제1항', page:108,
+     concept:'다른 유형에 해당하지 않더라도 교권을 존중하지 않거나 교원의 정당한 권한을 침해하는 부당한 간섭이면 학교장이 판단해 인정할 수 있습니다. 다른 유형에 준하는지 신중히 판단해야 하며, 최종 판단은 지역교권보호위원회가 합니다.',
+     example:'보호자가 1:1 통화·문자로 욕설·폭언을 했지만 공연성이 없어 모욕죄가 성립하기 어려운 경우',
+     cases:''}
+};
+const CRIME_TYPES = [1,2,3,4,5,6,7,8,9];
+
+/* =========================================================
+   판별 질문 — 판단이 아니라 '있었던 사실'을 묻습니다.
+   모든 세부 질문에 '잘 모르겠어요'가 붙습니다.
+   ========================================================= */
+const ACTS = [
+  {v:'touch', g:'body', l:'몸에 손을 대거나, 물건을 던지거나 휘둘렀다'},
+  {v:'damage', g:'body', l:'물건을 부수거나 서류·파일을 망가뜨렸다'},
+  {v:'visit', g:'body', l:'수업 중이나 학교에 찾아와 소란을 피웠다', s:'교실에 들어옴, 사람들을 데려와 소리침 등', only:'parent'},
+  {v:'stalk', g:'body', l:'따라다니거나 집 주소를 알아내 찾아왔다'},
+  {v:'insult', g:'word', l:'욕을 하거나 깔보는 말을 했다'},
+  {v:'threat', g:'word', l:'해치겠다고 하거나 겁을 주는 말·행동을 했다'},
+  {v:'rumor', g:'word', l:'나에 대한 이야기를 퍼뜨렸다', s:'거짓 소문, 사생활 폭로, 인터넷 게시글 등'},
+  {v:'messages', g:'word', l:'문자·전화·메시지를 계속 보낸다'},
+  {v:'falsereport', g:'word', l:'사실이 아닌 내용으로 신고·고소·민원을 넣었다'},
+  {v:'record', g:'media', l:'몰래 녹음·촬영했거나, 그것을 퍼뜨렸다'},
+  {v:'sexual', g:'media', l:'성적인 말이나 행동을 했다'},
+  {v:'complaint', g:'repeat', l:'같은 민원이나 요구를 되풀이한다', only:'parent'},
+  {v:'disrupt', g:'repeat', l:'지도해도 따르지 않고 수업을 방해했다', only:'student'},
+  {v:'other', g:'repeat', l:'위에 없는 다른 일이다'}
+];
+const GROUPS = [
+  {g:'body', l:'몸과 물건에 대한 행동', s:'때림·던짐, 물건 파손, 찾아옴, 따라다님'},
+  {g:'word', l:'말과 글', s:'욕설, 위협, 소문, 문자, 거짓 신고'},
+  {g:'media', l:'촬영·녹음, 성적인 행동'},
+  {g:'repeat', l:'되풀이되는 요구와 방해, 그 밖의 일'}
+];
+const UNSURE = {v:'unsure', l:'잘 모르겠어요', unsure:true};
+const has = (a, act) => (a.acts||[]).includes(act);
+const Q = {
+  ctx:{title:'그 일은 언제, 어디에서 있었나요?', help:'교육활동 중인 교원에 대한 행위여야 침해행위로 다룰 수 있습니다.', opts:[
+    {v:'school', l:'수업·생활지도·상담 등 학교 일과 중', s:'등·하교 지도, 현장체험학습, 쉬는 시간, 사안 조사 포함'},
+    {v:'afterhours', l:'근무시간 외, 학생·보호자와 학생 일로 상담하던 중', s:'퇴근 후 개인 휴대전화로 걸려 온 상담 포함'},
+    {v:'online', l:'SNS·인터넷 게시판·단체방에 올린 글이나 게시물'},
+    {v:'private', l:'교육활동과 관계없는 사적인 자리'},
+    UNSURE]},
+  actor:{title:'누가 한 일인가요?', opts:[
+    {v:'student', l:'학생'},
+    {v:'parent', l:'보호자 등', s:'부모, 조부모, 형제자매, 친인척, 지인 포함'},
+    {v:'colleague', l:'동료 교원이나 학교 관리자'},
+    {v:'outsider', l:'학생·보호자와 관계없는 외부인'}]},
+  acts:{title:'어떤 일이 있었나요?', help:'묶음을 눌러 펼친 뒤, 해당하는 것을 모두 고르세요.', multi:true},
+  touch_hurt:{act:'touch', title:'다친 곳이 있거나 병원 진료를 받았나요?', opts:[
+    {v:'hurt', l:'네, 다쳤거나 진료를 받았어요(받을 예정이에요)', s:'멍·골절·고막 손상, 지속된 폭언으로 생긴 수면장애·우울 등도 포함'},
+    {v:'nohurt', l:'아니요, 다치지 않았거나 실제로 맞지는 않았어요'}, UNSURE]},
+  visit_force:{act:'visit', title:'찾아왔을 때 어떤 행동이 있었나요?', opts:[
+    {v:'force', l:'때리겠다고 하거나, 여럿을 데려와 소리치거나, 학생을 끌어내는 등 위세를 부렸어요'},
+    {v:'protest', l:'큰 소리로 항의만 했어요'}, UNSURE]},
+  insult_public:{act:'insult', title:'그 말을 할 때 다른 사람이 있었나요?', opts:[
+    {v:'public', l:'네, 다른 학생·사람이 있었거나 단체방·SNS였어요', s:'혼잣말이었다고 해도 다른 사람이 들었다면 여기에 해당'},
+    {v:'private', l:'아니요, 1:1 통화·문자이거나 단둘이 있을 때였어요'}, UNSURE]},
+  threat_kind:{act:'threat', title:'어떤 말이나 행동이었나요?', opts:[
+    {v:'harm', l:'나나 가족을 해치겠다는 말, 흉기를 보이거나 자해하겠다고 소동을 피움'},
+    {v:'legal', l:'고소나 민원을 넣겠다는 말만 했어요'},
+    {v:'legalAbuse', l:'고소·민원 이야기에 욕설·폭언이 섞였거나, 확인되지 않은 일로 고소하겠다고 했어요'}, UNSURE]},
+  threat_duty:{act:'threat', when:a=>a.q.threat_kind==='harm', title:'그 일로 수업이나 지도가 중단되었나요?', opts:[{v:'yes',l:'네, 중단되었어요'},{v:'no',l:'아니요'}, UNSURE]},
+  rumor_where:{act:'rumor', title:'어디에 퍼졌나요?', opts:[
+    {v:'talk', l:'여러 사람에게 말로'},
+    {v:'online', l:'인터넷 카페·게시판·SNS·단체방에 글로'},
+    {v:'official', l:'수사기관·교육청·국민신문고에 신고나 민원으로'}, UNSURE]},
+  rumor_true:{act:'rumor', when:a=>['talk','online','unsure'].includes(a.q.rumor_where), title:'퍼진 내용이 사실과 다른가요?', opts:[
+    {v:'false', l:'사실과 달라요'},
+    {v:'true', l:'사실이지만 알리고 싶지 않은 내용이에요', s:'가정사 등 사생활 포함'}, UNSURE]},
+  msg_fear:{act:'messages', title:'메시지에 겁나거나 불안해지는 내용이 있나요?', help:'예: 해치겠다, 찾아가겠다, 가만두지 않겠다, 당신 때문에 괴롭다며 압박하는 내용', opts:[
+    {v:'yes', l:'네, 있어요'}, {v:'no', l:'아니요, 요구나 항의 내용이에요'}, UNSURE]},
+  msg_repeat:{act:'messages', when:a=>a.q.msg_fear==='yes' || a.q.msg_fear==='unsure', title:'얼마나 자주 왔나요?', opts:[
+    {v:'repeat', l:'하루에 여러 번, 또는 짧은 기간에 계속'},
+    {v:'once', l:'몇 달에 한두 번 정도'}, UNSURE]},
+  false_know:{inc:a=>has(a,'falsereport') || (has(a,'rumor') && a.q.rumor_where==='official'), title:'신고 내용이 사실이 아님을 보여 주는 것이 있나요?', help:'거짓 신고·민원은 명예훼손이 아니라 무고로 판단합니다.', opts:[
+    {v:'know', l:'네, 있고 신고한 사람도 그것을 알았거나 알 수 있었어요', s:'CCTV, 목격자 진술, 무혐의 결정 등을 확인했는데도 같은 내용을 다시 넣은 경우'},
+    {v:'noproof', l:'아직 확인된 자료는 없어요'},
+    {v:'exaggerate', l:'있었던 일을 부풀린 정도예요'}, UNSURE]},
+  record_who:{act:'record', title:'녹음·촬영한 사람은 누구인가요?', opts:[
+    {v:'outsider', l:'대화에 없던 사람', s:'보호자가 자녀 가방에 녹음기를 넣은 경우 등'},
+    {v:'listener', l:'수업을 듣던 학생 등 대화 상대'}, UNSURE]},
+  record_spread:{act:'record', title:'그 녹음·영상이 다른 사람에게 전달되거나 올라갔나요?', opts:[
+    {v:'yes', l:'네', s:'단체방·SNS·게임 프로필 등, 합성해서 올린 경우 포함'},
+    {v:'no', l:'아니요'}, UNSURE]},
+  sexual_kind:{act:'sexual', title:'어떤 행동이었나요?', opts:[
+    {v:'crime', l:'강제로 신체를 만지거나, 몰래 신체를 촬영하거나, 성적 합성물·음란물을 만들거나 보냈어요'},
+    {v:'conduct', l:'성적인 농담이나 신체 평가, 동의 없는 신체 밀착, 성적인 사진을 보이게 둔 것 등'}, UNSURE]},
+  complaint_kind:{inc:a=>has(a,'complaint') || (a.actor==='parent' && has(a,'messages') && a.q.msg_fear==='no'), title:'무엇을 요구하나요?', help:'같은 요구나 항의가 되풀이된다면 어떤 성격인지 골라 주세요.', opts:[
+    {v:'harass', l:'괴롭히거나 특혜를 얻으려는 요구', s:'우리 아이는 지도하지 말라, 교사의 연수·출장·단체 가입 내역을 내놓으라 등'},
+    {v:'interfere', l:'교사의 교육적 판단을 바꾸라는 요구', s:'담임 교체, 지각 처리·생활기록부 내용, 시험 범위 요구 등'},
+    {v:'duty', l:'교사의 의무가 아닌 일', s:'아이만을 위한 급식, 매일 하루 일 보고, 교사 개인에게 배상 요구 등'},
+    {v:'opinion', l:'수업·평가·학교 운영에 대한 의견이나 정보 요청'},
+    {v:'unsure', l:'어느 것에도 딱 맞지 않아요', unsure:true}]},
+  complaint_repeat:{inc:a=>Q.complaint_kind.inc(a) && a.q.complaint_kind && a.q.complaint_kind!=='opinion', title:'같은 요구가 몇 번 있었나요?', opts:[
+    {v:'yes', l:'여러 번 되풀이되었어요', s:'전화·민원·면담·문자를 모두 포함'},
+    {v:'no', l:'한 번이었어요'}, UNSURE]},
+  disrupt_after:{act:'disrupt', title:'지도한 뒤 어떻게 되었나요?', opts:[
+    {v:'stopped', l:'일단 멈췄다가, 조용히 다시 했어요', s:'몰래 먹기, 몰래 휴대전화 보기 등'},
+    {v:'continued', l:'지도해도 같은 행동을 계속했어요'},
+    {v:'escalated', l:'지도할수록 더 크게 방해했어요', s:'교사 말 따라 하기, 바닥에 눕기, 노래 부르기 등'}, UNSURE]},
+  disrupt_count:{act:'disrupt', when:a=>a.q.disrupt_after==='continued' || a.q.disrupt_after==='unsure', title:'이런 일이 얼마나 있었나요?', opts:[
+    {v:'repeat', l:'여러 번 지도했거나, 여러 수업에서 되풀이되었어요'},
+    {v:'once', l:'이번 한 번이에요'}, UNSURE]}
+};
+const DETAIL_Q = Object.keys(Q).filter(k=>!['ctx','actor','acts'].includes(k));
+function incQ(k, a){ const d = Q[k]; if(d.inc) return d.inc(a); return has(a, d.act) && (!d.when || d.when(a)); }
+
+/* =========================================================
+   저장소
+   - 판별 답, 사건 기록, 사안 정보: sessionStorage(이 탭에만, 탭을 닫으면 사라짐)
+   - 지역 선택: localStorage(기기에 기억)
+   ========================================================= */
+const SS = {
+  get(k, d){ try{ const v = sessionStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ sessionStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ sessionStorage.removeItem(k); }catch(e){} }
+};
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ?? d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+};
+let region = LS.get('ep_region', '');
+let answers = SS.get('ep_answers', null) || {ctx:null, actor:null, acts:[], q:{}};
+let openGroups = new Set();
+function saveAnswers(){ SS.set('ep_answers', answers); }
+function resetAnswers(){ answers = {ctx:null, actor:null, acts:[], q:{}}; openGroups = new Set(); saveAnswers(); }
+
+/* 사안(담당자용) */
+const blankDl = () => ({recv:'', report:'', committee:'', notice:''});
+function newCaseObj(name){ return {id:'c'+Date.now()+Math.floor(Math.random()*1000), name, checks:{}, dl:blankDl(), tab:0, result:null, changed:false}; }
+let store = SS.get('ep_cases', null);
+if(!store || !store.list || !store.list.length){ const c = newCaseObj('사안 1'); store = {cur:c.id, list:[c]}; }
+function saveStore(){ SS.set('ep_cases', store); }
+function curCase(){ return store.list.find(c=>c.id===store.cur) || store.list[0]; }
+function caseHasContent(c){ return Object.keys(c.checks).length || c.dl.recv || c.result; }
+function touchCase(){ const c = curCase(); c.changed = true; saveStore(); }
+
+/* 사건 기록(피해 교원용) */
+const blankInc = () => ({id:'i'+Date.now()+Math.floor(Math.random()*1000), dt:'', place:'', actor:'', what:'', witness:'', evidence:[], harm:''});
+let rec = SS.get('ep_record', null) || {incidents:[blankInc()], wants:[]};
+function saveRec(){ SS.set('ep_record', rec); }
+const EVIDENCE = ['문자·메신저','통화 녹음','사진·영상','CCTV','진단서','목격자','기타'];
+const WANTS = ['가해자와의 즉시 분리','특별휴가·병가','심리상담·치료 지원','지역교권보호위원회 개최','분쟁조정','법률 상담'];
+
+/* ========== 화면 이동 (뒤로가기 유지, URL 해시 없음, 미리보기 창 대응) ========== */
+const app = document.getElementById('app');
+let curState = {screen:'home', step:0};
+let useHistory = true;
+const memStack = [];
+function hist(method, st){
+  if(!useHistory) return false;
+  try{ history[method](st, ''); return true; } catch(e){ useHistory = false; return false; }
+}
+function go(screen, step=0, opts={}){
+  const st = Object.assign({screen, step}, opts);
+  if(!hist('pushState', st)) memStack.push(curState);
+  curState = st; render(st); window.scrollTo(0,0);
+}
+function goBack(){
+  if(useHistory){ history.back(); return; }
+  const prev = memStack.pop() || {screen:'home', step:0};
+  curState = prev; render(prev); window.scrollTo(0,0);
+}
+window.addEventListener('popstate', e=>{
+  const st = e.state;
+  if(!st || st.screen === '__guard'){ hist('pushState', {screen:'home',step:0}); curState = {screen:'home',step:0}; render(curState); return; }
+  curState = st; render(st); window.scrollTo(0,0);
+});
+
+/* ========== 공통 ========== */
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),1900); }
+function setHdr(){ const h = document.getElementById('hdr'); if(h) document.documentElement.style.setProperty('--hdr', h.offsetHeight+'px'); }
+const NAV_OF = {check:'check', result:'check', resume:'check', record:'record', teacher:'teacher', guide:'guide', print:'guide', types:'types'};
+function render(st){
+  const s = st.screen;
+  closeTerm();
+  app.classList.toggle('has-bar', s==='check');
+  document.body.classList.toggle('with-bar', s==='check');
+  document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on', b.dataset.nav===NAV_OF[s]));
+  if(s==='check') app.innerHTML = viewCheck(st.step||0, !!st.edit);
+  else if(s==='result') app.innerHTML = viewResult();
+  else if(s==='record') app.innerHTML = viewRecord();
+  else if(s==='guide') app.innerHTML = viewGuide();
+  else if(s==='teacher') app.innerHTML = viewTeacher();
+  else if(s==='types') app.innerHTML = viewTypes();
+  else if(s==='resume') app.innerHTML = viewResume();
+  else if(s==='print') app.innerHTML = viewPrint();
+  else app.innerHTML = viewHome();
+  if(s==='guide') updateDeadlines();
+  if(st.anchor){ const el = document.getElementById(st.anchor); if(el) setTimeout(()=>el.scrollIntoView({block:'start'}), 0); }
+  // 쪽수 출처 표기를 원문 링크로
+  app.querySelectorAll('.ref').forEach(r=>{ if(!r.querySelector('a')) r.innerHTML = `<a href="${SOURCE.url}" target="_blank" rel="noopener" title="교육부 원문 보기">${r.innerHTML}</a>`; });
+  setHdr();
+}
+function regionSelect(id='regionSel'){
+  return `<select id="${id}" data-region aria-label="지역 선택"><option value="">지역 선택</option>${REGIONS.map(r=>`<option value="${r.id}" ${r.id===region?'selected':''}>${r.n}</option>`).join('')}</select>`;
+}
+const telLink = (n, cls='') => `<a class="tel ${cls}" href="tel:${n.replace(/[^0-9]/g,'')}">${ic('phone')} ${n}</a>`;
+
+/* ========== 홈 ========== */
+function viewHome(){
+  const r = regionOf(region);
+  return `
+  <h1>교육활동 침해행위인지 점검하고, 대응 절차를 확인하세요</h1>
+  <p class="lead">판별 결과와 관계없이 신고하고 상담받을 수 있습니다. 이 도구는 상황을 정리하고 다음 할 일을 찾도록 돕습니다.</p>
+  <section class="sos" aria-label="긴급 안내">
+    <div class="t">${ic('alert')} 지금 위험하거나 도움이 필요하다면</div>
+    <ol>
+      <li>멈춰 달라고 분명히 말하세요.</li>
+      <li><b>옆 반 선생님이나 교무실에 도움을 청하거나</b>, 그 자리를 벗어나세요.</li>
+      <li>몸이 위험하면 112에 신고하세요. <a class="call112" href="tel:112">${ic('phone')} 112</a></li>
+    </ol>
+    <div class="after"><span>진정된 뒤에</span>
+      <button data-action="nav" data-to="teacher" data-anchor="sep">분리 요청 방법</button>
+      ${r?`<a href="tel:${r.area}1395">교육활동보호 상담 ${r.area}-1395</a>`:`<span>교육활동보호 상담 지역번호+1395</span>`}<span class="small">(업무시간)</span>
+    </div>
+  </section>
+  <div class="menu">
+    <button class="menu-card primary" data-action="startCheck"><span class="ic">${ic('search')}</span><span><span class="t">내 사례 점검하기</span><span class="d">있었던 일을 고르면 해당할 수 있는 유형과 지금 할 일을 알려 드려요.</span></span><span class="go">${ic('arrowR')}</span></button>
+  </div>
+  <div class="menu sub">
+    <button class="menu-card" data-action="nav" data-to="record"><span class="ic">${ic('pen')}</span><span><span class="t">사건 기록하기</span><span class="d">날짜·장소·말과 행동·목격자를 정리해 신고서 초안으로 만들어요.</span></span></button>
+    <button class="menu-card" data-action="nav" data-to="teacher"><span class="ic">${ic('heart')}</span><span><span class="t">피해 교원 안내</span><span class="d">신고 방법, 분리 요청, 특별휴가·상담·치료비 지원</span></span></button>
+    <button class="menu-card" data-action="nav" data-to="guide"><span class="ic">${ic('list')}</span><span><span class="t">업무 담당자 안내</span><span class="d">사안별 단계 체크리스트, 오늘 할 일, 기한 계산기, 사안 파일 저장</span></span></button>
+    <button class="menu-card" data-action="nav" data-to="types"><span class="ic">${ic('book')}</span><span><span class="t">침해 유형 16가지</span><span class="d">유형별 뜻과 예시, 매뉴얼 사례</span></span></button>
+  </div>
+  <div class="region" style="margin:18px 0 6px"><span style="white-space:nowrap">근무 지역</span> ${regionSelect()} <span>${r?'연락처가 이 지역으로 안내됩니다.':'고르면 모든 화면의 연락처가 이 지역으로 바뀝니다.'}</span></div>
+  <p class="small muted">입력한 내용은 서버로 보내지 않고 이 탭에만 보관되며, 탭을 닫으면 사라집니다. 학생·보호자 이름은 적지 마세요.</p>
+  <p class="small muted">${esc(UNOFFICIAL)}</p>
+  ${footer()}`;
+}
+function sourcesHtml(open=false){
+  return `<details class="sources" ${open?'open':''}><summary>${ic('book')} 출처와 참고 자료</summary><div class="inner">
+    <div class="src-main"><div><b>${esc(SOURCE_TEXT)}</b><div class="small muted">판별 기준, 사례, 대응 절차, 서식 번호, 연락처의 출처입니다. 화면의 쪽수는 이 매뉴얼의 쪽수입니다. ${esc(SOURCE.kogl)} 조건에 따라 출처를 밝히고 비영리로 이용합니다.</div></div>
+    <a class="btn ghost sm" href="${SOURCE.url}" target="_blank" rel="noopener">원문 보기 ${ic('arrowR')}</a></div>
+    <ul class="src-list" style="margin-top:12px">
+      <li>「교원의 지위 향상 및 교육활동 보호를 위한 특별법」 제19조~제30조, 같은 법 시행령</li>
+      <li>「교육활동 침해행위 및 조치 기준에 관한 고시」 제2조, 「교육공무원법」 제43조제1항</li>
+      <li>시·도 교육활동보호센터 연락처: 매뉴얼 75~76쪽(2026년 1월 기준)</li>
+      <li>공휴일: 「관공서의 공휴일에 관한 규정」(2026년 노동절·제헌절 공휴일 지정 반영)</li>
+      <li>법령 원문: <a href="https://www.law.go.kr" target="_blank" rel="noopener">국가법령정보센터</a> · 교육자료: <a href="${FORMS_LINK}" target="_blank" rel="noopener">한국교육개발원 교육활동보호센터</a></li>
+    </ul>
+    <p class="small muted" style="margin:.6em 0 0">${esc(UNOFFICIAL)} 법적 판단을 대신하지 않습니다.</p>
+  </div></details>`;
+}
+function footer(){ return `${sourcesHtml()}<p class="footer">출처: ${esc(SOURCE_TEXT)} · <a href="${SOURCE.url}" target="_blank" rel="noopener">원문 보기</a><br><button class="footlink" data-action="openCopy" aria-haspopup="dialog">ⓘ 저작권 안내</button> · 만든이 2026 최창훈</p>`; }
+
+/* ========== 판별 질문 ========== */
+function getQueue(a=answers){
+  const q = ['ctx','actor'];
+  if(!a.actor || a.actor==='colleague' || a.actor==='outsider') return q;
+  q.push('acts');
+  DETAIL_Q.forEach(k=>{ if(incQ(k, a)) q.push(k); });
+  return q;
+}
+const STAGES = ['상황','행위자','있었던 일','자세히'];
+function stageOf(id){ return id==='ctx'?0 : id==='actor'?1 : id==='acts'?2 : 3; }
+function curVal(id){ if(id==='ctx'||id==='actor') return answers[id]; return answers.q[id]; }
+function isAnswered(id){ return id==='acts' ? answers.acts.length>0 : curVal(id)!==undefined && curVal(id)!==null; }
+function firstUnanswered(){ const q = getQueue(); const i = q.findIndex(id=>!isAnswered(id)); return i; }
+function optLabel(id){
+  if(id==='acts') return ACTS.filter(x=>answers.acts.includes(x.v)).map(x=>x.l).join(' / ');
+  const o = Q[id].opts.find(o=>o.v===curVal(id)); return o ? o.l : '';
+}
+function viewCheck(step, edit){
+  const queue = getQueue();
+  if(step >= queue.length) return viewResult();
+  const id = queue[step], d = Q[id], stg = stageOf(id);
+  const details = queue.filter(k=>stageOf(k)===3), di = details.indexOf(id);
+  const stagesHtml = STAGES.map((s,i)=>`<li class="${i<stg?'done':i===stg?'cur':''}"></li>`).join('');
+  let body = '', canNext = false;
+  if(id==='acts'){
+    const avail = ACTS.filter(x=>!x.only || x.only===answers.actor);
+    body = GROUPS.map(g=>{
+      const items = avail.filter(x=>x.g===g.g); if(!items.length) return '';
+      const n = items.filter(x=>answers.acts.includes(x.v)).length;
+      const open = openGroups.has(g.g) || n>0;
+      return `<details data-group="${g.g}" ${open?'open':''}><summary><span><span style="display:block">${esc(g.l)}</span>${g.s?`<span class="small muted" style="font-weight:400">${esc(g.s)}</span>`:''}</span><span class="cnt ${n?'':'zero'}" style="margin-left:auto">${n}</span></summary><div class="inner">
+        ${items.map(x=>{ const sel = answers.acts.includes(x.v);
+          return `<button class="opt multi ${sel?'sel':''}" data-action="toggleAct" data-v="${x.v}" aria-pressed="${sel}"><span class="mk"></span><span><span class="l">${esc(x.l)}</span>${x.s?`<span class="s">${esc(x.s)}</span>`:''}</span></button>`; }).join('')}
+      </div></details>`; }).join('');
+    canNext = answers.acts.length > 0;
+  }else{
+    const v = curVal(id);
+    body = d.opts.map(o=>`<button class="opt ${v===o.v?'sel':''} ${o.unsure?'unsure':''}" data-action="answer" data-id="${id}" data-v="${o.v}" aria-pressed="${v===o.v}"><span class="mk"></span><span><span class="l">${esc(o.l)}</span>${o.s?`<span class="s">${esc(o.s)}</span>`:''}</span></button>`).join('');
+    canNext = !!v;
+  }
+  const last = step === queue.length-1;
+  let nextLabel = edit ? '고친 답으로 결과 보기' : (last ? '결과 보기' : '다음');
+  if(id==='acts' && !edit) nextLabel = answers.acts.length ? `${answers.acts.length}개 선택 · 다음` : '하나 이상 고르세요';
+  return `
+  <ol class="stages" aria-hidden="true">${stagesHtml}</ol>
+  <div class="stage-label"><span><b>${STAGES[stg]}</b>${stg===3?` ${di+1} / ${details.length}`:''}</span><span>${STAGES.slice(stg+1).concat('결과').join(' · ')}</span></div>
+  ${edit?'<div class="editing">답을 고치는 중입니다</div>':''}
+  <div class="q-title">${esc(d.title)}</div>
+  ${d.help?`<div class="q-help">${esc(d.help)}</div>`:''}
+  ${body}
+  <div class="bar"><div class="wrap">
+    <button class="btn ghost prev" data-action="back">${ic('arrowL')} 이전</button>
+    <button class="btn next" data-action="next" ${canNext?'':'disabled'}>${nextLabel}${canNext?' '+ic('arrowR'):''}</button>
+  </div></div>`;
+}
+function nextStep(step, edit){
+  const queue = getQueue();
+  if(edit){ const u = firstUnanswered(); if(u<0) go('result'); else go('check', u, {edit:true}); return; }
+  if(step+1 >= queue.length) go('result'); else go('check', step+1);
+}
+
+function hasAnswers(){ return !!(answers.ctx || answers.actor || answers.acts.length); }
+function viewResume(){
+  const done = firstUnanswered() < 0;
+  return `<h1>사례 점검</h1>
+  <p class="lead">이전에 점검하던 내용이 있습니다.</p>
+  <div class="card"><div class="small muted" style="margin-bottom:6px">이전 점검</div>
+    ${getQueue().filter(isAnswered).slice(0,3).map(id=>`<div class="ans-row"><span><span class="q">${esc(Q[id].title)}</span>${esc(optLabel(id))}</span></div>`).join('')}</div>
+  <div class="menu">
+    <button class="menu-card primary" data-action="resumeCheck"><span class="ic">${ic('arrowR')}</span><span><span class="t">${done?'이전 결과 보기':'이어서 점검하기'}</span><span class="d">${done?'답을 고치려면 결과 화면의 ‘내 답 보기·고치기’를 이용하세요.':'답하지 않은 질문부터 이어서 합니다.'}</span></span></button>
+    <button class="menu-card" data-action="newCheck"><span class="ic">${ic('reset')}</span><span><span class="t">새로 점검하기</span><span class="d">다른 사안을 점검합니다. 이전 답은 지워집니다.</span></span></button>
+  </div>`;
+}
+
+/* ========== 판별 ========== */
+const LV_RANK = {high:3, review:2, no:1};
+const LV_TXT = {high:'해당할 수 있음', review:'더 살펴볼 필요', no:'이 유형에는 맞지 않음'};
+function evaluate(a=answers){
+  const R = {}, notes = [], flags = {};
+  const add = (t, lv, why, qs=[])=>{ if(!R[t]) R[t]={type:t, level:lv, why:[], qs:[]}; if(LV_RANK[lv]>LV_RANK[R[t].level]) R[t].level=lv; if(why && !R[t].why.includes(why)) R[t].why.push(why); qs.forEach(x=>{ if(!R[t].qs.includes(x)) R[t].qs.push(x); }); };
+  const queue = getQueue(a), q = {};
+  queue.forEach(k=>{ if(a.q[k]!==undefined) q[k]=a.q[k]; });
+  const acts = a.acts || [];
+  const U = '확인이 필요합니다. ';
+  if(acts.includes('touch')){
+    flags.urgent = true; const Qs=['touch_hurt'];
+    if(q.touch_hurt==='hurt') add(3,'high','신체의 건강이나 기능에 피해가 생겼다면 상해에 해당할 수 있습니다.',Qs);
+    else if(q.touch_hurt==='nohurt') add(3,'high','실제로 맞지 않았더라도 가까이서 휘두르거나 물건을 던지면 폭행에 해당합니다.',Qs);
+    else add(3,'high','몸에 힘을 쓰거나 물건을 던진 것 자체로 폭행에 해당할 수 있습니다. 다친 정도에 따라 상해로 볼 수도 있으니 진료 기록을 남겨 두세요.',Qs);
+  }
+  if(acts.includes('damage')) add(6,'high','물건·서류·파일을 부수거나 숨겨서 쓸 수 없게 만들면 손괴에 해당할 수 있습니다. 잠시 쓸 수 없게 만든 것도 포함됩니다.');
+  if(acts.includes('visit')){
+    const Qs=['visit_force'];
+    if(q.visit_force==='force'){ flags.urgent = true; add(1,'high','수업 중 교실에 들어와 폭행·협박하거나 위력으로 방해하면 공무집행방해·업무방해에 해당할 수 있습니다.',Qs); }
+    else if(q.visit_force==='protest'){ add(1,'no','폭행·협박·위력 없이 항의만 했다면 공무집행방해·업무방해로 보기는 어렵습니다.',Qs); add(16,'review','항의가 교원의 정당한 권한을 침해하는 수준이면 학교장 판단으로 다룰 수 있고, 되풀이되면 반복적 부당 간섭도 검토합니다.',Qs); }
+    else add(1,'review',U+'폭행·협박을 하거나 여럿을 데려와 위세를 부렸다면 공무집행방해·업무방해에 해당할 수 있습니다. 목격자에게 당시 상황을 확인하세요.',Qs);
+  }
+  if(acts.includes('stalk')){ flags.urgent = true; add(9,'high','불안감을 느끼도록 따라다니거나 찾아오는 행위는 스토킹범죄로 형사처벌 대상이 될 수 있습니다.'); }
+  if(acts.includes('insult')){
+    const Qs=['insult_public'];
+    if(q.insult_public==='public') add(5,'high','경멸하는 말을 다른 사람이 듣거나 볼 수 있었다면 모욕에 해당할 수 있습니다. 혼잣말이라고 해도 마찬가지입니다. 다만 단순히 화를 표현한 정도라면 모욕이 아닐 수 있습니다.',Qs);
+    else if(q.insult_public==='private'){ add(5,'no','1:1로 한 말은 공연성이 없어 모욕죄가 성립하기 어렵습니다.',Qs); add(16,'review','1:1 통화·문자의 욕설·폭언은 학교장이 판단하는 침해행위로 다룰 수 있습니다.',Qs); }
+    else add(5,'review',U+'다른 사람이 들었거나 볼 수 있었다면 모욕, 1:1이었다면 학교장 판단으로 다룰 수 있습니다.',Qs);
+  }
+  if(acts.includes('threat')){
+    const Qs=['threat_kind'];
+    if(q.threat_kind==='harm'){
+      flags.urgent = true;
+      add(4,'high','공포심을 일으킬 만큼 구체적인 해악을 알렸다면, 실제로 할 생각이 없었더라도 협박에 해당할 수 있습니다.',Qs);
+      if(q.threat_duty==='yes') add(1,'review','직무 중인 교원을 협박해 교육활동을 방해했다면 공무집행방해(사립은 업무방해)에도 해당할 수 있습니다.',['threat_duty']);
+      else if(q.threat_duty==='unsure') add(1,'review',U+'협박 때문에 수업이나 지도가 방해되었다면 공무집행방해(사립은 업무방해)에도 해당할 수 있습니다.',['threat_duty']);
+    }else if(q.threat_kind==='legal') add(4,'no','법이 보장한 고소·민원을 예고한 것만으로는 협박이 아닙니다.',Qs);
+    else if(q.threat_kind==='legalAbuse') add(4,'review','폭언을 섞거나 확인되지 않은 일로 고소하겠다고 위협하면 권리 남용으로 협박이 될 수 있습니다.',Qs);
+    else add(4,'review',U+'공포심을 일으킬 만큼 구체적인 해악을 알렸는지가 기준입니다. 들은 말을 그대로 기록해 두세요.',Qs);
+  }
+  if(acts.includes('rumor')){
+    const Qs=['rumor_where','rumor_true'];
+    if(q.rumor_where==='official') add(5,'no','신고·민원 내용은 담당자 외에 퍼질 가능성이 낮아 명예훼손이 성립하기 어렵습니다. 대신 무고 여부를 함께 판단했습니다.',['rumor_where']);
+    else if(q.rumor_where==='online'){
+      const lv = q.rumor_true==='false' ? 'high' : 'review';
+      add(8, lv, '인터넷에 비방할 목적으로 사실이나 거짓을 드러내 명예를 훼손하면 불법정보 유통에 해당할 수 있습니다. 공공의 이익을 위한 글이면 비방 목적이 부정될 수 있습니다. 게시글은 화면을 저장해 두세요.',Qs);
+      add(5, lv, '인터넷 글이나 댓글도 명예훼손이 될 수 있습니다.',Qs);
+    }else if(q.rumor_where==='talk' || q.rumor_where==='unsure'){
+      const pre = q.rumor_where==='unsure' ? '어디까지 퍼졌는지 확인이 필요합니다. ' : '';
+      if(q.rumor_true==='false') add(5, q.rumor_where==='unsure'?'review':'high', pre+'사실이 아닌 이야기로 평판을 떨어뜨렸다면 명예훼손에 해당할 수 있습니다.',Qs);
+      else if(q.rumor_true==='true') add(5,'review',pre+'사실이라도 명예훼손이 될 수 있습니다. 다만 오로지 공공의 이익을 위한 것이었다면 처벌하지 않습니다.',Qs);
+      else add(5,'review',U+'여러 사람이 알 수 있게 평판을 떨어뜨리는 이야기를 했다면 명예훼손에 해당할 수 있습니다.',Qs);
+    }
+  }
+  if(acts.includes('messages')){
+    const Qs=['msg_fear','msg_repeat'];
+    if(q.msg_fear==='yes' || q.msg_fear==='unsure'){
+      const pre = q.msg_fear==='unsure' ? '내용이 공포심·불안감을 줄 만한지 확인이 필요합니다. ' : '';
+      if(q.msg_repeat==='repeat'){ add(8, q.msg_fear==='yes'?'high':'review', pre+'공포심·불안감을 주는 문자를 되풀이해 보내면 불법정보 유통에 해당할 수 있습니다. 하루 3회를 반복으로 인정한 판결도 있습니다.',Qs); flags.msg = true; }
+      else if(q.msg_repeat==='once'){ add(8,'no','몇 달에 한두 번 보낸 것은 반복으로 보기 어렵습니다(7개월 3회는 반복이 아니라고 본 판례).',Qs); add(4,'review','내용이 구체적인 해악을 알리는 것이라면 협박으로 검토할 수 있습니다.',Qs); add(16,'review','협박에 이르지 않더라도 학교장 판단으로 다룰 수 있습니다.',Qs); }
+      else add(8,'review',U+'받은 날짜와 횟수를 정리해 보세요. 짧은 기간에 되풀이되었다면 불법정보 유통에 해당할 수 있습니다.',Qs);
+    }else if(q.msg_fear==='no') add(8,'no','겁이나 불안을 주는 내용이 아니면 불법정보 유통에는 해당하지 않습니다. 요구가 되풀이된다면 그 성격을 함께 판단했습니다.',['msg_fear']);
+  }
+  if(q.false_know){
+    flags.report = true; const Qs=['false_know'];
+    if(q.false_know==='know') add(2,'high','거짓임을 알았거나 알 수 있었는데도 징계·처벌을 받게 할 목적으로 신고했다면 무고에 해당할 수 있습니다.',Qs);
+    else if(q.false_know==='exaggerate') add(2,'no','있었던 일을 바탕으로 정황을 부풀린 정도라면 무고에 해당하지 않습니다.',Qs);
+    else add(2,'review','신고 내용이 거짓이라는 적극적인 증명이 있어야 합니다. ‘사실로 확인되지 않았다’는 것만으로는 부족하니 CCTV·목격자·수사 결과 등을 확인하세요.',Qs);
+  }
+  if(acts.includes('record')){
+    const Qs=['record_who','record_spread'];
+    if(q.record_who==='outsider'){
+      add(9,'high','대화에 참여하지 않은 사람이 수업 중 발언을 몰래 녹음하면 통신비밀보호법 위반으로 형사처벌 대상이 될 수 있습니다.',['record_who']);
+    }else if(q.record_who==='listener'){
+      add(9,'no','학생은 대화 상대이므로 녹음 자체는 통신비밀보호법 위반이 아닙니다.',['record_who']);
+    }else add(9,'review',U+'녹음한 사람이 대화에 없던 사람(예: 보호자)이라면 통신비밀보호법 위반이 될 수 있습니다.',['record_who']);
+    if(q.record_spread==='yes') add(15,'high','교육활동 중인 교원의 음성·영상을 무단으로 퍼뜨리면 이 유형에 해당할 수 있습니다.',Qs);
+    else if(q.record_spread==='no'){ add(15,'no','퍼뜨리지 않았다면 무단 배포에는 해당하기 어렵습니다. 다만 교원의 음성권 침해 문제는 남습니다.',Qs); if(q.record_who!=='outsider') add(16,'review','동의 없는 녹음이 수업권을 침해했다면 학교장 판단으로 검토할 수 있습니다.',Qs); }
+    else if(q.record_spread==='unsure') add(15,'review',U+'단체방·SNS 등에 올라갔다면 무단 배포에 해당할 수 있습니다.',Qs);
+  }
+  if(acts.includes('sexual')){
+    const Qs=['sexual_kind'];
+    if(q.sexual_kind==='crime'){ flags.urgent = true; flags.sexual = true; add(7,'high','강제추행, 몰래 촬영, 성적 합성물, 음란물 전송 등은 성폭력범죄에 해당할 수 있습니다. 성욕을 채우려는 목적이 없었다는 주장은 판단에 영향을 주지 않습니다.',Qs); }
+    else if(q.sexual_kind==='conduct') add(12,'high','같은 처지의 평균적인 교원이 성적 굴욕감·혐오감을 느낄 만한 언동이라면 해당할 수 있습니다. 성적인 의도가 없었다는 주장은 판단에 영향을 주지 않습니다.',Qs);
+    else { flags.urgent = true; add(7,'review',U+'강제 접촉, 몰래 촬영, 합성물·음란물이 있었다면 성폭력범죄입니다.',Qs); add(12,'review','그 밖의 성적인 말이나 행동으로 굴욕감·혐오감을 느꼈다면 성적 언동에 해당할 수 있습니다.',Qs); }
+  }
+  if(q.complaint_kind){
+    const k = q.complaint_kind, rep = q.complaint_repeat, Qs=['complaint_kind','complaint_repeat'];
+    if(k==='opinion') add(10,'no','보호자는 자녀 교육에 관해 학교에 의견을 낼 수 있고(교육기본법 제13조), 정당한 의견 제시나 정보 요청은 침해행위가 아닙니다.',['complaint_kind']);
+    else if(k==='unsure') add(16,'review','어느 유형에도 딱 맞지 않더라도 교원의 정당한 권한을 침해하는 부당한 간섭이면 학교장 판단으로 다룰 수 있습니다.',Qs);
+    else{
+      const t = {harass:10, interfere:13, duty:11}[k];
+      const msg = {harass:'교원을 괴롭히거나 특혜를 얻으려는 등 목적이 정당하지 않은 민원을 반복하면 해당할 수 있습니다.',
+                   interfere:'교원의 정당한 교육적 판단에 반복적으로 간섭하면 해당할 수 있습니다. 담임 교체 요구는 비상적인 상황에서만 보충적으로 허용된다는 판례가 있습니다.',
+                   duty:'교사의 직무나 교육과정에 없는 일을 계속 강요하면 해당할 수 있습니다.'}[k];
+      if(rep==='yes') add(t,'high',msg,Qs);
+      else if(rep==='no') add(t,'review', msg + ' 다만 이 유형은 반복 또는 지속이 요건이므로 한 번이라면 해당하기 어렵습니다.',Qs);
+      else add(t,'review', msg + ' 요구를 받은 날짜와 방법을 정리해 몇 번이었는지 확인해 보세요.',Qs);
+    }
+  }
+  if(acts.includes('disrupt')){
+    const Qs=['disrupt_after','disrupt_count'];
+    const af = q.disrupt_after, ct = q.disrupt_count;
+    if(af==='stopped') add(14,'no','지도에 일단 따랐고 방해하지 않으려 했다면 의도적 방해로 보기 어렵습니다. 학칙과 「초·중등교육법」에 따른 생활지도·징계 대상입니다.',['disrupt_after']);
+    else if(af==='escalated') add(14,'high','지도할수록 더 크게 방해했다면 방해 결과를 개의치 않는 태도로 보아 의도적 방해에 해당할 수 있습니다.',['disrupt_after']);
+    else if(af==='continued'){
+      if(ct==='repeat') add(14,'high','여러 차례 지도했는데도 같은 행동을 계속했다면 의도적 방해에 해당할 수 있습니다.',Qs);
+      else add(14,'review','한 번의 불응이라면 우선 생활지도 대상입니다. 같은 일이 되풀이되는지 기록해 두세요.',Qs);
+    }else add(14,'review',U+'의도성은 학생의 나이, 행동, 반복·지속 여부, 전후 정황을 종합해 판단합니다.',Qs);
+  }
+  if(acts.includes('other')) add(16,'review','법령에 정한 유형이 아니더라도 교권을 존중하지 않거나 정당한 권한을 침해하는 부당한 간섭이면 학교장이 판단해 침해행위로 볼 수 있습니다. 다른 유형에 준하는지 신중히 판단합니다.');
+
+  const list = Object.values(R).sort((x,y)=> LV_RANK[y.level]-LV_RANK[x.level] || x.type-y.type);
+  const live = t => R[t] && R[t].level!=='no';
+  flags.violent = live(3) || live(7);
+  flags.parent = a.actor==='parent' && list.some(r=>r.level!=='no');
+  flags.crime = list.some(r=>CRIME_TYPES.includes(r.type) && r.level!=='no');
+  flags.privateCtx = a.ctx==='private';
+  const r = regionOf(region);
+  if(a.ctx==='private') notes.push({top:true, cls:'gray', html:'<b>교육활동 중이 아닐 수 있습니다.</b> 교육활동과 관계없는 사적인 자리에서 생긴 일은 「교원지위법」상 침해행위로 다루지 않습니다. 범죄에 해당하면 경찰 신고 등 일반 절차를 이용할 수 있습니다.' + `<div class="ref">${ref('scope')}</div>`});
+  if(a.ctx==='unsure') notes.push({top:true, cls:'gray', html:'<b>교육활동 중이었는지 확인해 보세요.</b> 수업·생활지도뿐 아니라 등·하교 지도, 쉬는 시간, 근무시간 외 학생 일 상담, SNS 게시물도 교육활동 중으로 볼 수 있습니다.' + `<div class="ref">${ref('scope')}</div>`});
+  if(a.ctx==='afterhours') notes.push({html:'근무시간 외라도 학생·보호자 요청으로 학생 일을 상담하던 중이었다면 교육활동 중으로 볼 수 있습니다.' + `<div class="ref">${ref(5)}</div>`});
+  if(a.ctx==='online') notes.push({html:'SNS 등에서의 모욕·명예훼손은 피해가 교육활동 시까지 이어지므로 교육활동 중인 교원에 대한 행위로 볼 수 있습니다.' + `<div class="ref">${ref(5)}</div>`});
+  if(flags.violent && a.actor==='student') notes.push({html:'<b>학교장 긴급조치</b> 상해·폭행이나 성폭력범죄라면 학교장이 위원회 결정 전에 학교에서의 봉사, 특별교육·심리치료, 출석정지, 학급교체를 우선 부과할 수 있습니다. 출석정지·학급교체 전에는 의견 진술 기회를 주고, 부과 후 위원회에 즉시 보고해 추인을 받습니다.' + `<div class="ref">${ref('emergency')}</div>`});
+  if(flags.violent) notes.push({html:'<b>특별휴가와 중대사안</b> 특별휴가는 5일 범위에, 상해·폭행이나 성폭력범죄면 5일 범위에서 더 받을 수 있습니다. 사망·4주 이상 치료 진단, 성폭력범죄는 교육부에 보고하는 중대사안입니다.' + `<div class="ref">${ref('leave')}</div>`});
+  if(flags.msg) notes.push({html:'<b>중대사안 기준</b> 공포심·불안감을 주는 문자로 4주 이상 정신건강의학과 치료가 필요하다는 진단을 받으면 중대사안으로 보고됩니다.' + `<div class="ref">${ref(44)}</div>`});
+  if(flags.parent) notes.push({html:'<b>보호자 등에 대한 조치</b> ① 서면사과 및 재발방지 서약 ② 특별교육 이수 또는 심리치료, 두 가지입니다. 정당한 사유 없이 특별교육·심리치료에 불참하면 300만 원 이하 과태료가 부과될 수 있습니다. 양측이 원하면 분쟁조정(개시 후 30일)도 이용할 수 있습니다.' + `<div class="ref">${ref('dispute')}</div>`});
+  if(flags.crime){
+    let h = '<b>형사 절차</b> 피해 선생님이 직접 경찰에 고소할 수 있습니다. 교육감이 고발할 수도 있으나 모욕처럼 피해자 고소가 필요한 친고죄와 14세 미만 학생은 고발 대상에서 제외됩니다.';
+    if(a.actor==='student') h += ' 만 10세 이상 19세 미만 학생이라면 학교장 통고제도 있습니다.';
+    notes.push({html: h + `<div class="ref">${ref('legal')}</div>`});
+  }
+  if(flags.report) notes.push({html:'<b>아동학대로 신고되었다면</b> 정당한 생활지도였는지 교육감이 조사·수사기관에 의견을 냅니다(신고 사항을 공유받은 날부터 7일 이내). 교육지원청의 확인서 작성에 자료를 내어 협조할 수 있습니다.' + `<div class="ref">${ref('childAbuse')}</div>`});
+  return {list, notes, flags};
+}
+
+/* ========== 결과 ========== */
+function assureHtml(){
+  return `<div class="assure">${ic('shield')}<span><b>점검 결과와 관계없이 신고하고 상담받을 수 있습니다.</b> 침해행위인지는 지역교권보호위원회가 판단하며, 학교는 신고를 축소하거나 은폐할 수 없습니다(교원지위법 제27조).</span></div>`;
+}
+function basisHtml(qs){
+  const rows = qs.filter(id=>getQueue().includes(id) && isAnswered(id));
+  if(!rows.length) return '';
+  return `<div class="basis"><div class="bt">이 판단에 쓰인 내 답</div>${rows.map(id=>`<div class="bl"><span>${esc(optLabel(id))}</span><button class="linkbtn" data-action="edit" data-q="${id}">고치기</button></div>`).join('')}</div>`;
+}
+function viewResult(){
+  const r = regionOf(region);
+  if(answers.actor==='colleague' || answers.actor==='outsider'){
+    const col = answers.actor==='colleague';
+    return `<h1>점검 결과</h1>
+    <div class="summary"><div class="big">교육활동 침해행위로 다루기 어렵습니다</div>
+      <p class="muted" style="margin:.4em 0 0">교육활동 침해행위는 <b>학생 또는 보호자 등</b>이 교육활동 중인 교원에게 한 행위입니다. 그래도 아래 제도로 도움을 받을 수 있습니다.</p></div>
+    ${col?`<div class="card"><h3>이런 제도를 이용하세요</h3><p class="small muted">근무조건·인사·업무분장 갈등, 갑질 피해, 복무관리 지시 등은 아래 제도가 적합합니다.</p>
+      <div class="kv"><b>고충심사청구 (국·공립 교원)</b><span>인사·처우 등 근무조건, 신상 문제</span></div>
+      <div class="kv"><b>소청심사청구 (국·공립, 사립)</b><span>징계 등 불리한 처분, 30일 이내 청구</span></div>
+      <div class="kv"><b>국가인권위원회 진정 (국·공립, 사립)</b><span>인권침해, 차별행위</span></div>
+      <div class="kv"><b>직장 내 괴롭힘·갑질 신고</b><span>소속 교육(지원)청 담당 부서</span></div>
+      <div class="ref">${ref('other')}</div></div>`
+    :`<div class="now urgent"><h3>${ic('alert')} 위험하다면</h3><ol><li>주변 선생님이나 교무실에 도움을 청하고, 그 자리를 벗어나세요.</li><li>몸이 위험하면 112에 신고하세요.</li><li>학교 안에서 생긴 위협이라면 교원보호공제의 위협대처(경호) 서비스 대상이 될 수 있습니다.</li></ol><div class="ref">${ref('mutual')}</div></div>`}
+    <div class="btn-row"><button class="btn ghost" data-action="edit" data-q="actor">${ic('arrowL')} 답 고치기</button><button class="btn" data-action="restart">처음부터 다시 점검</button></div>
+    ${footer()}`;
+  }
+  const {list, notes, flags} = evaluate();
+  const hi = list.filter(x=>x.level!=='no'), no = list.filter(x=>x.level==='no');
+  const highs = list.filter(x=>x.level==='high'), reviews = list.filter(x=>x.level==='review');
+  const urgent = flags.urgent && hi.length;
+  let big;
+  if(highs.length) big = `해당할 수 있는 유형 ${highs.length}개${reviews.length?`, 더 살펴볼 유형 ${reviews.length}개`:''}`;
+  else if(reviews.length) big = `더 살펴볼 유형 ${reviews.length}개`;
+  else big = '점검한 유형에는 잘 맞지 않았습니다';
+  const chips = hi.map(x=>`<span class="chip lv-${x.level}">${esc(TYPES[x.type].name)}</span>`).join('');
+  const hl = hotline(r);
+  const now = urgent
+    ? `<div class="now urgent"><h3>${ic('alert')} 지금 먼저 할 일</h3><ol>
+        <li>멈춰 달라고 분명히 말하세요.</li>
+        <li><b>옆 반 선생님이나 교무실에 도움을 청하거나</b>, 그 자리를 벗어나세요.</li>
+        <li>몸이 위험하면 <b>112</b>에 신고하세요.</li>
+        <li>진정된 뒤에는 교감·교장이나 담당자에게 알리고, 가해자와의 <button class="term" data-term="분리조치">분리</button>를 요청하세요. 메시지·사진·진단서 등 자료는 지우지 말고 보관하세요.</li></ol></div>`
+    : `<div class="now"><h3>${ic('info')} 지금 할 일</h3><ol>
+        <li>있었던 일을 날짜·시간·장소, 말과 행동 순서로 적어 두세요. <button class="linkbtn" data-action="nav" data-to="record">사건 기록하기</button></li>
+        <li>교감·교장이나 교육활동 보호 담당자에게 알리세요. 말로도 신고할 수 있습니다.</li>
+        <li>혼자 판단하지 말고 교육활동보호센터(${esc(hl)})와 상의하세요.</li></ol></div>`;
+  const card = x=>{ const t = TYPES[x.type];
+    return `<div class="rcard">
+      <div class="head"><span class="chip lv-${x.level}">${LV_TXT[x.level]}</span><h3 style="margin:0">${esc(t.name)}</h3></div>
+      <ul class="why">${x.why.map(w=>`<li>${gl(esc(w))}</li>`).join('')}</ul>
+      ${basisHtml(x.qs)}
+      <details class="more"><summary>뜻과 매뉴얼 사례</summary><div class="inner">
+        <p class="small"><b>근거</b> ${esc(t.law)}</p><p class="small">${gl(esc(t.concept))}</p>
+        <p class="small"><b>예시</b> ${esc(t.example)}</p>${t.cases?`<p class="small"><b>매뉴얼 사례</b> ${esc(t.cases)}</p>`:''}
+        <div class="ref">${ref(t.page,'Ⅴ장 '+x.type+'번')}</div></div></details>
+    </div>`; };
+  const restNotes = notes.filter(n=>!n.top);
+  const qList = getQueue();
+  return `
+  <h1>점검 결과</h1>
+  ${notes.filter(n=>n.top).map(n=>`<div class="note ${n.cls}">${n.html}</div>`).join('')}
+  <div class="summary"><div class="assure-line">${ic('shield')}<span><b>결과와 관계없이 신고·상담할 수 있습니다.</b> 판단은 지역교권보호위원회가 하며, 학교는 신고를 축소·은폐할 수 없습니다(교원지위법 제27조).</span></div>
+    <div class="big">${big}</div>${chips?`<div class="chips big-chips">${chips}</div>`:''}
+    <p class="small muted" style="margin:.8em 0 0">${hi.length?'매뉴얼 사례에 비춘 참고 결과입니다.':'이 도구가 묻는 유형에 맞지 않았을 뿐입니다. 다른 사정이 있거나 학교장 판단으로 다뤄질 수 있으니 담당자나 교육활동보호센터와 상의하세요.'}</p></div>
+  ${now}
+  ${hi.length?`<h2>유형별 판단</h2>${hi.map(card).join('')}`:''}
+  ${no.length?`<details><summary>이 유형에는 맞지 않음 <span class="cnt zero">${no.length}</span></summary><div class="inner">
+    <p class="small muted">이 유형의 요건에 맞지 않을 뿐, 다른 유형이나 학교장 판단으로 다뤄질 수 있습니다.</p>
+    ${no.map(x=>`<div class="norow"><b>${esc(TYPES[x.type].name)}</b><div class="small muted">${x.why.map(w=>gl(esc(w))).join(' ')}</div></div>`).join('')}</div></details>`:''}
+  ${restNotes.length?`<details><summary>이 사례에서 함께 알아둘 것 <span class="cnt">${restNotes.length}</span></summary><div class="inner">${restNotes.map(n=>`<div class="note">${gl(n.html)}</div>`).join('')}</div></details>`:''}
+  <details><summary>내 답 보기·고치기</summary><div class="inner">
+    ${qList.filter(isAnswered).map(id=>`<div class="ans-row"><span><span class="q">${esc(Q[id].title)}</span>${esc(optLabel(id))}</span><button class="linkbtn" data-action="edit" data-q="${id}">고치기</button></div>`).join('')}
+  </div></details>
+  <h2>다음 단계</h2>
+  <div class="menu" style="margin-top:0">
+    <button class="menu-card" data-action="nav" data-to="record"><span class="ic">${ic('pen')}</span><span><span class="t">이 내용으로 사건 기록하기</span><span class="d">점검 결과가 함께 담긴 신고서 초안을 만들어요.</span></span></button>
+    <button class="menu-card" data-action="linkCase"><span class="ic">${ic('list')}</span><span><span class="t">담당자 체크리스트에 연결</span><span class="d">이 결과에 맞는 할 일(긴급조치, 분쟁조정 등)이 강조됩니다.</span></span></button>
+    <button class="menu-card" data-action="nav" data-to="teacher"><span class="ic">${ic('heart')}</span><span><span class="t">피해 교원 안내</span><span class="d">분리 요청, 특별휴가·상담·치료비 지원</span></span></button>
+  </div>
+  <div class="btn-row">
+    <button class="btn ghost" data-action="copyResult">${ic('copy')} 결과 복사</button>
+    <button class="btn ghost" data-action="restart">${ic('reset')} 처음부터 다시 점검</button>
+  </div>
+  ${footer()}`;
+}
+function resultText(){
+  const {list, notes} = evaluate();
+  const L = [];
+  L.push('[교육활동 침해 판별 도우미 점검 결과]');
+  getQueue().filter(isAnswered).forEach(id=>L.push(`- ${Q[id].title} → ${optLabel(id)}`));
+  L.push('');
+  list.forEach(x=>{ L.push(`■ ${TYPES[x.type].name} — ${LV_TXT[x.level]}`); x.why.forEach(w=>L.push('   · ' + w)); L.push('   (' + ref(TYPES[x.type].page,'Ⅴ장 '+x.type+'번') + ')'); });
+  if(notes.length){ L.push(''); L.push('[함께 알아둘 것]'); notes.forEach(n=>L.push(' · ' + n.html.replace(/<div class="ref">.*?<\/div>/g,'').replace(/<[^>]+>/g,''))); }
+  L.push(''); L.push('※ 참고 정보입니다. 점검 결과와 관계없이 신고·상담할 수 있으며, 최종 판단은 지역교권보호위원회가 합니다.'); L.push(`출처: ${SOURCE_TEXT}`); L.push(`원문: ${SOURCE.url}`);
+  return L.join('\n');
+}
+function resultSnapshot(){
+  if(!answers.actor || answers.actor==='colleague' || answers.actor==='outsider') return null;
+  const {list, flags} = evaluate();
+  return {types:list.filter(x=>x.level!=='no').map(x=>({name:TYPES[x.type].name, level:x.level})), flags:{violent:!!flags.violent, parent:!!flags.parent, crime:!!flags.crime, report:!!flags.report, privateCtx:!!flags.privateCtx}, at:fmt(new Date())};
+}
+
+/* ========== 사건 기록 ========== */
+function fmtDT(s){ if(!s) return ''; const d = new Date(s); if(isNaN(d)) return s; return fmt(d)+' '+hm(d); }
+function recText(){
+  const L = [], none = '(미기재)';
+  L.push('교육활동 침해 사안 기록 — 사안 신고서 작성용 초안');
+  L.push(`작성일: ${fmt(new Date())}`);
+  L.push('※ 실명 대신 학생 A, 보호자 등으로 적었습니다.');
+  L.push('');
+  L.push('1. 개요');
+  if(answers.ctx) L.push(`- 상황: ${optLabel('ctx')}`);
+  if(answers.actor) L.push(`- 행위자: ${optLabel('actor')}`);
+  if(answers.acts.length && answers.actor!=='colleague' && answers.actor!=='outsider'){
+    L.push(`- 있었던 일: ${optLabel('acts')}`);
+    const {list} = evaluate(); const hi = list.filter(x=>x.level!=='no');
+    if(hi.length) L.push(`- 판별 도우미 점검 결과(참고): ${hi.map(x=>`${TYPES[x.type].name}(${LV_TXT[x.level]})`).join(', ')}`);
+  }
+  if(!answers.ctx && !answers.actor) L.push('- (사례 점검을 하면 개요가 함께 채워집니다)');
+  L.push('');
+  L.push(`2. 사건 경위 (${rec.incidents.length}건)`);
+  rec.incidents.forEach((x,i)=>{
+    L.push(`[사건 ${i+1}]`);
+    L.push(`- 일시: ${fmtDT(x.dt)||none}`);
+    L.push(`- 장소: ${x.place||none}`);
+    L.push(`- 행위자: ${x.actor||none}`);
+    L.push(`- 있었던 일: ${x.what||none}`);
+    L.push(`- 목격자: ${x.witness||none}`);
+    L.push(`- 증거 자료: ${x.evidence.length?x.evidence.join(', '):none}`);
+    L.push(`- 피해: ${x.harm||none}`);
+    L.push('');
+  });
+  L.push('3. 원하는 조치');
+  L.push(rec.wants.length ? rec.wants.map(w=>'- '+w).join('\n') : '- '+none);
+  L.push('');
+  L.push('※ 이 초안을 학교의 「교육활동 침해 사안 신고서」(서식1)에 옮겨 적어 제출하세요. 점검 결과와 관계없이 신고할 수 있으며, 최종 판단은 지역교권보호위원회가 합니다.');
+  L.push(`※ 참고: ${SOURCE_TEXT}`);
+  return L.join('\n');
+}
+function viewRecord(){
+  const actorDefault = answers.actor==='student' ? '학생' : answers.actor==='parent' ? '보호자' : '';
+  if(actorDefault){ let ch = false; rec.incidents.forEach(x=>{ if(!x.actor){ x.actor = actorDefault; ch = true; } }); if(ch) saveRec(); }
+  return `
+  <h1>사건 기록하기</h1>
+  <p class="lead">담당자에게 전달할 내용을 정리합니다. 이름 대신 <b>학생 A, 보호자</b>처럼 적어 주세요. 이 탭에만 보관되며 탭을 닫으면 사라지니, 다 쓰면 저장하거나 인쇄하세요.</p>
+  ${rec.incidents.map((x,i)=>`
+  <section class="inc">
+    <div class="ih"><b>사건 ${i+1}</b>${rec.incidents.length>1?`<button class="linkbtn" data-action="delInc" data-id="${x.id}">이 사건 지우기</button>`:''}</div>
+    <div class="fld"><label>일시</label><div class="dtrow"><input type="datetime-local" data-rec="dt" data-inc="${x.id}" value="${esc(x.dt)}"><button class="btn ghost sm" data-action="nowDT" data-inc="${x.id}">${ic('clock')} 지금</button></div></div>
+    <div class="fld"><label>장소</label><input type="text" data-rec="place" data-inc="${x.id}" value="${esc(x.place)}" placeholder="예: 4학년 2반 교실, 교문 앞, 전화"></div>
+    <div class="fld"><label>행위자 <span class="hint">이름 대신 관계로</span></label><input type="text" data-rec="actor" data-inc="${x.id}" value="${esc(x.actor || actorDefault)}" placeholder="예: 학생 A, 학생 A의 보호자"></div>
+    <div class="fld"><label>있었던 일 <span class="hint">들은 말은 따옴표로 그대로, 순서대로</span></label><textarea data-rec="what" data-inc="${x.id}" placeholder="예: 수업 중 휴대전화를 넣으라고 지도하자, 학생 A가 &quot;…&quot;라고 말하며 의자를 교탁 쪽으로 던짐">${esc(x.what)}</textarea></div>
+    <div class="fld"><label>목격자 <span class="hint">이름 대신 역할로</span></label><input type="text" data-rec="witness" data-inc="${x.id}" value="${esc(x.witness)}" placeholder="예: 같은 반 학생 3명, 옆 반 담임"></div>
+    <div class="fld"><label>남아 있는 자료</label><div class="checks">${EVIDENCE.map(ev=>`<label><input type="checkbox" data-recev="${ev}" data-inc="${x.id}" ${x.evidence.includes(ev)?'checked':''}>${ev}</label>`).join('')}</div></div>
+    <div class="fld"><label>피해 <span class="hint">몸·마음·수업 차질 등</span></label><input type="text" data-rec="harm" data-inc="${x.id}" value="${esc(x.harm)}" placeholder="예: 손목 타박상, 수면 곤란, 수업 20분 중단"></div>
+  </section>`).join('')}
+  <button class="btn ghost" data-action="addInc" style="width:100%">${ic('plus')} 사건 추가 <span class="small muted" style="font-weight:400">· 같은 일이 되풀이되었다면 따로 적으세요</span></button>
+  <section class="card" style="margin-top:16px">
+    <h3>원하는 조치</h3>
+    <div class="checks" style="margin-top:8px">${WANTS.map(w=>`<label><input type="checkbox" data-want="${w}" ${rec.wants.includes(w)?'checked':''}>${w}</label>`).join('')}</div>
+  </section>
+  <h2>신고서 초안</h2>
+  <div class="btn-row" style="margin-top:0">
+    <button class="btn" data-action="copyRec">${ic('copy')} 복사</button>
+    <button class="btn ghost" data-action="saveRec">${ic('save')} 텍스트 파일로 저장</button>
+    <button class="btn ghost" data-action="print">${ic('print')} 인쇄</button>
+  </div>
+  <div class="doc print-area" id="recDoc">${esc(recText())}</div>
+  <div class="btn-row"><button class="btn ghost" data-action="clearRec">${ic('reset')} 기록 모두 지우기</button></div>
+  ${footer()}`;
+}
+function refreshRecDoc(){ const d = document.getElementById('recDoc'); if(d) d.textContent = recText(); }
+
+/* ========== 담당자 체크리스트 ========== */
+/* todos: [id, 할 일, 보충 설명, 인쇄용 짧은 문구, 핵심(1), 점검 결과 조건, 조건과 관계없이 항상 표시(1)] */
+const STEPS = [
+  {id:'s1', short:'초기 대응', title:'초기 대응과 피해교원 보호', who:'학교', dl:'즉시', dlKey:'분리조치 권장 최대 기간', page:'protect', forms:[3,2], todos:[
+    ['s1a','피해 선생님의 상태와 원하는 것을 먼저 듣는다','응급 상황이면 응급처치·병원 후송 연계','피해교원 상태 확인·의사 청취',1],
+    ['s1b','학교장에게 보고하고 담임교사에게 알린다','','학교장 보고·담임 통보',1],
+    ['s1c','분리조치에 대한 피해 선생님의 의사를 확인한다','원하지 않거나, 특별휴가 등으로 이미 떨어져 있으면 분리하지 않음','분리 의사 확인(서식3)',1],
+    ['s1k','학교장과 긴급조치 필요 여부를 검토한다','상해·폭행, 성폭력범죄일 때 봉사·특별교육·출석정지·학급교체를 우선 부과 가능, 부과 후 위원회에 즉시 보고(서식2)','긴급조치 검토(서식2)',0,'violent'],
+    ['s1d','조퇴·병가·특별휴가와 심리·법률 상담을 안내한다','특별휴가는 위원회 개최 전에도 학교장이 허가 가능','휴가·상담 안내'],
+    ['s1e','목격한 학생들을 안정시킨다','','목격 학생 안정'],
+    ['s1f','필요하면 증거 자료와 목격자를 확보한다','사진, 메시지, 녹음, 목격자 연락처 등','증거·목격자 확보'],
+    ['s1g','관련 학생의 보호자에게 연락한다','확인된 사실만 간결하게, 피해교원 연락처 등 개인정보는 알리지 않음, 처리 절차 안내','보호자 연락(사실만)'],
+    ['s1h','범죄 행위면 경찰 신고가 가능함을 안내한다','긴급하면 112','범죄면 경찰 신고 안내',0,'crime',1],
+    ['s1l','아동학대로 신고된 사안이면 교육감 의견 제출 절차를 교육지원청과 확인한다','정당한 생활지도였다는 근거 자료를 모아 교육지원청에 제출','아동학대 신고 시 교육감 의견 절차',0,'report'],
+    ['s1i','언론 등 외부 대응 창구를 한 곳으로 정한다','','대응 창구 단일화'],
+    ['s1j','지역교권보호위원회 등 앞으로의 절차를 피해 선생님께 안내한다','','이후 절차 안내']]},
+  {id:'s2', short:'보고', title:'교육지원청에 사안 보고', who:'학교', dl:'접수 후 24시간 이내', dlKey:'교육지원청 보고', page:31, forms:[1], todos:[
+    ['s2a','사안 접수 후 24시간 안에 교육지원청에 보고한다','전화·구두 보고 또는 사안신고서를 이메일·공문으로 제출','24시간 내 교육지원청 보고',1],
+    ['s2b','피해 선생님께 사안신고서 작성을 안내하고 받는다','위원회 개최를 원하면 필수. 24시간 안에 어렵다면 사안 발생보고서와 함께 제출 가능. 사건 기록하기 화면의 초안을 활용하게 하면 편합니다','사안신고서(서식1) 접수',1]]},
+  {id:'s3', short:'사안 파악', title:'사안 파악과 사안 발생보고', who:'학교', dl:'보고 후 5일 이내(주말·공휴일 제외)', dlKey:'사안 발생보고서 제출', page:'report', forms:[4,5,6,7,8], todos:[
+    ['s3a','피해 선생님을 면담한다','필요한 보호조치, 위원회 개최 희망 여부, 분쟁조정 희망 여부 확인','피해교원 면담(위원회·분쟁조정 의사)',1],
+    ['s3b','사안 경위를 확인하고 진술서·사실확인서 작성을 안내한다','일시, 장소, 전후 사정, 동기, 피해 정도','경위 확인·진술서 안내'],
+    ['s3c','관련 학생·보호자를 면담한다','상태 확인, 절차 안내, 관계 회복·분쟁조정 의사 확인. 학생 면담은 학습권을 지키는 범위에서','관련 학생·보호자 면담'],
+    ['s3h','보호자 등에 대한 조치와 분쟁조정 절차를 양측에 안내한다','조치는 서면사과·재발방지 서약 또는 특별교육·심리치료. 양측이 원하면 분쟁조정(개시 후 30일)','보호자 조치·분쟁조정 안내',0,'parent'],
+    ['s3d','관련자 의견서를 받는다','거부하면 의견 없음으로 심의될 수 있음을 미리 알리고, 연락한 이력을 보고서에 적음','의견서(서식4) 접수',1],
+    ['s3e','목격자 진술서를 받는다','당사자가 관여하지 않도록 공정하게','참고인 진술서(서식5)'],
+    ['s3f','조치 판단에 필요한 사항을 파악한다','평소 품행, 과거 침해 이력, 사과·합의 여부, 피해교원의 임신·장애, 학생의 장애 등','조치 판단 자료 파악'],
+    ['s3g','교육지원청에 공문으로 제출한다','사안 발생보고서 + 의견서 + 참고인 진술서 (+ 분쟁조정 신청서)','발생보고서(서식7) 공문 제출',1]],
+    branch:'<b>갈림길</b> 피해 선생님이 위원회를 원하지 않으면 양측이 <b>사안 종결 확인서(서식8)</b>를 작성합니다. 이후 같은 사안으로는 심의를 요청할 수 없으니 미리 알려 주세요. 사람을 착각하는 등 명백한 <b>오인 신고</b>는 피해 선생님의 사안종결신청서만으로 종결합니다.'},
+  {id:'s4', short:'위원회', title:'교육지원청 조사와 지역교권보호위원회', who:'교육지원청', dl:'발생보고서 접수 후 21일 이내 개최', dlKey:'지역교권보호위원회 개최', page:'committee', forms:[15,'15-1'], todos:[
+    ['s4a','교육지원청의 추가 조사·면담에 협조한다','이미 확인한 내용은 중복 조사하지 않음','교육지원청 조사 협조',1],
+    ['s4b','출석통지가 오면 당사자에게 안내한다','학생은 출석 인정, 교원은 출장 처리. 출석이 어려우면 서면 의견서(서식15-1) 제출 가능','출석 안내(학생 출석인정·교원 출장)',1],
+    ['s4c','분쟁조정을 신청했다면 일정을 안내한다','조정 개시 후 30일 안에 합의되지 않으면 위원회 심의로 전환','분쟁조정 일정 안내',0,'parent',1]]},
+  {id:'s5', short:'종결', title:'결과 통지 후 사안 종결', who:'학교·교육지원청', dl:'통지 14일 이내 · 90일 후 점검', dlKey:'조치 결과 통지', page:'close', forms:[18,11,'12-1','12-2'], todos:[
+    ['s5a','결과 통지를 받고 조치 이행을 돕는다','전학은 지체 없이, 봉사·출석정지·학급교체도 지체 없이 이행','결과 통지 접수·이행 협조',1],
+    ['s5b','피해 선생님의 심리치료 등 회복을 지원한다','','피해교원 회복 지원',1],
+    ['s5c','재발 방지 조치와 추수지도를 한다','','재발 방지·추수지도'],
+    ['s5d','결과에 이의가 있으면 불복 절차를 안내한다','행정심판: 안 날부터 90일, 있은 날부터 180일 이내 / 행정소송: 안 날부터 90일 이내','불복 절차 안내'],
+    ['s5e','통지 후 90일이 지나도 이행하지 않은 사람이 있으면 명단을 공문 보고한다','','90일 후 미이행자 보고(서식11·12)',1]]}
+];
+const FORM_NAMES = {1:'교육활동 침해 사안 신고서',2:'긴급조치 보고서',3:'즉시 분리 의사 확인서',4:'의견서',5:'참고인 진술서',6:'분쟁조정 신청서',7:'사안 발생보고서',8:'사안 종결 확인서',11:'조치 미이행 보고서',
+  '12-1':'조치 미이행 보고서','12-2':'조치 미이행 보고서',15:'출석통지서','15-1':'서면 의견서',18:'조치결정 통지서'};
+const DONTS = [
+  '침해행위인지 아닌지를 담당자가 먼저 판단해 말하지 않기',
+  '진술을 강요하거나, 한쪽에 관용을 구하거나, 책임을 추궁하거나, 징계를 언급하지 않기',
+  '섣불리 화해를 권하거나 사안을 축소·은폐하지 않기(축소·은폐는 징계 대상)',
+  '한쪽이 쓴 신고서·진술서나 연락처·주소를 상대방에게 전달하지 않기',
+  '위원회 결정 전에는 ‘침해 학생’이 아니라 ‘침해 관련 학생’이라고 부르기',
+  '업무로 알게 된 비밀과 관련자 자료를 누설하지 않기'
+];
+function caseFlags(c){ return (c.result && c.result.flags) || {}; }
+function visTodos(s, c){ const f = caseFlags(c); return s.todos.filter(t=>!t[5] || t[6] || f[t[5]]); }
+function isRel(t, c){ return t[5] && caseFlags(c)[t[5]]; }
+function isCore(t, c){ return !!t[4] || isRel(t, c); }
+function stepDone(s, c){ return visTodos(s,c).filter(t=>c.checks[t[0]]).length; }
+function todoHtml(t, c){ return `<label class="todo ${c.checks[t[0]]?'done':''}"><input type="checkbox" data-check="${t[0]}" ${c.checks[t[0]]?'checked':''}><span class="tx"><span class="m">${esc(t[1])}</span>${isRel(t,c)?'<span class="tag rel">점검 결과 관련</span>':''}${t[2]?`<span class="sub">${esc(t[2])}</span>`:''}</span></label>`; }
+function formsHtml(s){
+  return `<div class="forms"><div class="fl">${ic('doc')}<span>${s.forms.map(n=>`서식${n} ${FORM_NAMES[n]}`).join(' · ')}</span></div>
+    <div class="fs">서식은 매뉴얼 부록 4 「각종 서식」(${MANUAL.pages.forms}쪽~)에 있습니다. 파일은 <a href="${FORMS_LINK}" target="_blank" rel="noopener">교육활동보호센터 누리집</a> 자료실이나 교육지원청 담당자에게 받으세요.</div></div>`;
+}
+function todayHtml(c){
+  const out = calcDeadlines(c.dl).out;
+  if(!c.dl.recv) return `<section class="today"><div class="lbl">오늘 할 일</div><div class="what">사안 접수 일시를 넣으세요.</div><div class="small muted" style="margin-bottom:8px">넣으면 다음 할 일과 남은 날짜가 여기에 나타납니다.</div><button class="btn ghost sm" data-action="toCalc">${ic('clock')} 접수 일시 넣기</button></section>`;
+  let si = STEPS.findIndex(s=>visTodos(s,c).some(t=>isCore(t,c) && !c.checks[t[0]]));
+  if(si<0) si = STEPS.findIndex(s=>visTodos(s,c).some(t=>!c.checks[t[0]]));
+  if(si<0) return `<section class="today"><div class="lbl">오늘 할 일</div><div class="what">모든 할 일을 마쳤습니다.</div><div class="small muted">사안 파일을 저장해 두면 나중에 다시 확인할 수 있습니다.</div></section>`;
+  const s = STEPS[si];
+  const t = visTodos(s,c).find(t=>isCore(t,c) && !c.checks[t[0]]) || visTodos(s,c).find(t=>!c.checks[t[0]]);
+  const o = out.find(x=>x.k===s.dlKey);
+  let dd = '';
+  if(o && o.d){
+    const t0 = new Date(); t0.setHours(0,0,0,0); const d0 = new Date(o.d); d0.setHours(0,0,0,0);
+    const n = Math.round((d0 - t0)/86400000);
+    dd = n<0 ? `<span class="dday late">기한 ${-n}일 지남</span>` : n===0 ? `<span class="dday soon">오늘까지</span>` : `<span class="dday ${n<=2?'soon':''}">D-${n}</span>`;
+  }
+  return `<section class="today"><div class="lbl">오늘 할 일 · ${si+1}단계 ${esc(s.short)}</div>
+    <div class="what">${esc(t[1])}</div>
+    <div class="meta" style="margin:0">${o?`<span class="tag date">${ic('clock')} ${esc(o.v)}</span>`:''}${dd}
+    <button class="btn ghost sm" data-action="tab" data-i="${si}" style="margin-left:auto">이 단계 보기 ${ic('arrowR')}</button></div></section>`;
+}
+function viewGuide(){
+  const c = curCase();
+  const s = STEPS[c.tab] || STEPS[0];
+  const vis = visTodos(s,c), core = vis.filter(t=>isCore(t,c)), rest = vis.filter(t=>!isCore(t,c));
+  const out = calcDeadlines(c.dl).out; const map = {}; out.forEach(o=>map[o.k]=o.v);
+  const snap = resultSnapshot();
+  return `
+  <h1>업무 담당자 안내</h1>
+  <p class="lead">신고 접수부터 사안 종결까지 다섯 단계입니다. 사안마다 따로 기록되고, 파일로 저장해 다른 날 이어서 할 수 있습니다.</p>
+
+  <section class="card" style="padding:14px 16px">
+    <div class="casebar">
+      <select data-case aria-label="사안 선택">${store.list.map(x=>`<option value="${x.id}" ${x.id===c.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
+      <button class="btn sm" data-action="exportCase">${ic('save')} 저장</button>
+      <details class="kebab"><summary aria-label="사안 메뉴">⋯</summary><div class="menu-pop">
+        <button data-action="newCase">${ic('plus')} 새 사안</button>
+        <button data-action="importCase">${ic('upload')} 사안 파일 불러오기</button>
+        <button data-action="renameCase">이름 바꾸기</button>
+        <button data-action="delCase" class="danger">이 사안 삭제</button>
+      </div></details>
+    </div>
+    <div class="savehint ${c.changed?'dirty':'muted'}">${c.changed?'저장하지 않은 변경이 있습니다. 탭을 닫기 전에 저장하세요.':'이 탭에만 보관됩니다. 다른 날 이어 하려면 저장하세요.'}</div>
+    ${c.result?`<div class="linked"><span class="small muted">연결된 점검 결과</span>${c.result.types.length?c.result.types.map(t=>`<span class="chip lv-${t.level}">${esc(t.name)}</span>`).join(''):'<span class="small muted">해당 유형 없음</span>'}
+      <span class="linked-acts">${snap?'<button class="linkbtn" data-action="linkCaseHere">바꾸기</button> · ':''}<button class="linkbtn" data-action="unlinkCase">해제</button></span></div>
+      ${c.result.flags.privateCtx?'<p class="small" style="color:var(--review);margin:.4em 0 0">교육활동 중이었는지 먼저 확인하세요.</p>':''}`
+    :`<div class="linked"><span class="small muted">점검 결과를 연결하면 필요한 할 일이 강조됩니다.</span><span class="linked-acts">${snap?'<button class="linkbtn" data-action="linkCaseHere">현재 점검 결과 연결</button>':'<button class="linkbtn" data-action="startCheck">사례 점검하기</button>'}</span></div>`}
+  </section>
+
+  ${todayHtml(c)}
+
+
+
+  <div class="tabs" role="tablist">
+    ${STEPS.map((x,i)=>{ const d = stepDone(x,c), n = visTodos(x,c).length;
+      return `<button class="tab ${i===c.tab?'on':''} ${d===n?'full':''}" role="tab" aria-selected="${i===c.tab}" data-action="tab" data-i="${i}"><b>${i+1}</b><span class="lbl">${esc(x.short)}</span><span class="tc">${d===n?'완료':`${d}/${n}`}</span></button>`; }).join('')}
+  </div>
+
+  <section class="panel" role="tabpanel">
+    <div class="panel-title">${c.tab+1}. ${esc(s.title)}</div>
+    <div class="meta"><span class="tag">${ic('clock')} ${esc(s.dl)}</span><span class="tag">${esc(s.who)}</span>${map[s.dlKey]?`<span class="tag date">${esc(map[s.dlKey])}</span>`:''}</div>
+    <div>${core.map(t=>todoHtml(t,c)).join('')}</div>
+    ${rest.length?`<details><summary>더 할 일 <span class="cnt ${rest.filter(t=>c.checks[t[0]]).length===rest.length?'':'zero'}">${rest.filter(t=>c.checks[t[0]]).length}/${rest.length}</span></summary><div class="inner">${rest.map(t=>todoHtml(t,c)).join('')}</div></details>`:''}
+    ${formsHtml(s)}
+    ${s.branch?`<div class="branch">${s.branch}</div>`:''}
+    <div class="ref">${ref(s.page)}</div>
+    <div class="nav2">
+      <button class="btn ghost" data-action="tab" data-i="${c.tab-1}" ${c.tab===0?'disabled':''}>${ic('arrowL')} 이전 단계</button>
+      <button class="btn ghost" data-action="tab" data-i="${c.tab+1}" ${c.tab===STEPS.length-1?'disabled':''}>다음 단계 ${ic('arrowR')}</button>
+    </div>
+  </section>
+
+  <section class="card calc" id="calc">
+    <h3 style="display:flex;align-items:center;gap:8px">${ic('clock')} 기한 계산기</h3>
+    <div class="row"><label for="dlRecv">사안 접수 일시</label>
+    <input type="datetime-local" id="dlRecv" value="${esc(c.dl.recv)}" data-dl="recv"></div>
+    <div id="dlOut"></div>
+    <details style="margin-top:12px" ${c.dl.report||c.dl.committee||c.dl.notice?'open':''}><summary>진행된 날짜 더 넣기 <span class="small muted" style="font-weight:400">(선택)</span></summary><div class="inner">
+      <div class="row"><label for="dlReport">사안 발생보고서 제출일 <span class="hint">비우면 5일 기한으로 계산</span></label><input type="date" id="dlReport" value="${esc(c.dl.report)}" data-dl="report"></div>
+      <div class="row"><label for="dlCommittee">위원회 개최일</label><input type="date" id="dlCommittee" value="${esc(c.dl.committee)}" data-dl="committee"></div>
+      <div class="row"><label for="dlNotice">조치 결과 통지를 받은 날</label><input type="date" id="dlNotice" value="${esc(c.dl.notice)}" data-dl="notice"></div>
+    </div></details>
+    <p class="small muted" style="margin:10px 0 0">${HOLIDAY_YEARS.join('·')}년 공휴일·대체공휴일 반영. 참고용이며 정확한 기한은 교육지원청 안내를 따르세요.</p>
+  </section>
+
+  <h2>알아둘 것</h2>
+  ${committeeHtml()}
+  <details><summary>${ic('alert')} 담당자가 하지 말아야 할 것</summary><div class="inner"><ul class="plain">${DONTS.map(d=>`<li>${esc(d)}</li>`).join('')}</ul><div class="ref">${ref('caution')}, 28쪽</div></div></details>
+  <details><summary>분리조치 요점</summary><div class="inner"><ul class="plain">
+    <li>침해 사실을 안 즉시 피해 선생님의 분리 의사를 확인합니다(서식3).</li>
+    <li>피해 선생님이 반대하거나, 특별휴가·병가로 이미 떨어져 있으면 분리하지 않습니다.</li>
+    <li>심각성·지속성·고의성을 고려해 기간을 정하되, 결정 시점부터 최대 7일을 넘지 않도록 권장합니다(첫날 포함, 휴일 포함).</li>
+    <li>학교 안에 별도 공간을 마련하고 학습 자료·원격 수업 등으로 학생의 학습권을 보장합니다. 학교 밖에서 분리하면 출석인정 결석으로 처리할 수 있습니다.</li>
+    <li>쉬는 시간·점심시간 동선 분리 계획을 세우고, 관련 학생(보호자)에게 취지·기간·출결을 설명합니다.</li>
+  </ul><div class="ref">${ref('separate')}</div></div></details>
+  <details><summary>학교장 긴급조치 요점</summary><div class="inner"><p class="small muted">상해·폭행, 성폭력범죄일 때</p><ul class="plain">
+    <li>학생에게 학교에서의 봉사, 특별교육·심리치료, 출석정지, 학급교체를 각각 또는 함께 부과할 수 있습니다.</li>
+    <li>출석정지·학급교체 전에는 학생이나 보호자에게 의견 진술 기회를 줍니다.</li>
+    <li>${gl('부과 후 학생·보호자에게 통지하고, 위원회에 즉시 보고해 추인을 받습니다(서식2).')}</li>
+    <li>출석정지 기간은 위원회 조치 결정 때까지로 정할 수 있으며, 미인정 결석으로 처리합니다.</li>
+  </ul><div class="ref">${ref('emergency')}</div></div></details>
+  <details><summary>꼭 알아둘 법적 의무</summary><div class="inner"><ul class="plain">
+    <li><b>신고 의무</b> 침해행위를 보거나 알게 된 사람은 즉시 신고해야 하며, 신고했다는 이유로 불이익을 주면 안 됩니다(교원지위법 제28조).</li>
+    <li><b>보고 의무</b> 학교장은 보호조치·분리조치를 했거나 신고를 받으면 교육지원청에 지체 없이 보고합니다(제20조).</li>
+    <li><b>축소·은폐 금지</b> 학교장은 침해행위를 축소·은폐하면 안 됩니다(제27조).</li>
+    <li><b>비밀 누설 금지</b> 업무로 알게 된 비밀과 관련자 자료를 누설하면 안 됩니다(제30조).</li>
+  </ul><div class="ref">${ref('29~30')}</div></div></details>
+
+  <div class="btn-row">
+    <button class="btn ghost" data-action="nav" data-to="print">${ic('print')} 인쇄용 한 장</button>
+    <button class="btn ghost" data-action="resetChecks">${ic('reset')} 이 사안 체크 초기화</button>
+  </div>
+
+  <h2>연락처</h2>
+  ${viewContacts()}
+  ${footer()}`;
+}
+
+/* ========== 위원회 판단 기준 (매뉴얼 50~55쪽) ========== */
+function committeeHtml(){
+  const kv = (k,v)=>`<div class="kv"><b>${k}</b><span>${v}</span></div>`;
+  return `<details><summary>지역교권보호위원회 판단 기준</summary><div class="inner">
+    <p class="small muted">보호자에게 “앞으로 어떻게 되나요?”라는 질문을 받을 때 참고하세요. 결과는 위원회가 정하므로, 이 기준으로 조치를 미리 단정해 말하지 않습니다.</p>
+    <h3>1. 침해행위가 있었는지</h3>
+    <ul class="plain">
+      <li>당사자 진술, 문답서, 목격자 진술, 조사보고서 등 증거로 판단합니다.</li>
+      <li>진술이 엇갈리면 내용의 합리성, 물증·제3자 진술과 맞는지, 진술 태도까지 살펴 신빙성을 판단합니다.</li>
+      <li>사실관계에 다툼이 있으면 보통 사람이 의심하지 않을 정도로 확실해야 인정됩니다. 증거가 부족하면 ‘교육활동 침해사안 아님’으로 끝날 수 있습니다.</li>
+    </ul>
+    <h3>2. 학생에 대한 조치</h3>
+    <p class="small">항목마다 출석위원 과반수 찬성으로 점수를 정하고(평균 내지 않음), 총점에 따라 조치를 고릅니다.</p>
+    ${kv('심각성·지속성·고의성','각 0~5점 (없음 0 · 매우 낮음 1 ~ 매우 높음 5)')}
+    ${kv('반성 정도·선도 가능성, 관계 회복 정도','각 0~3점 (높음 0 · 보통 1 · 낮음 2 · 없음 3)')}
+    ${kv('가중·감경','피해 교원이 임신했거나 장애가 있으면 1단계 가중, 학생에게 장애가 있으면 1단계 감경(위원회 의결)')}
+    <div class="card" style="margin:10px 0;padding:12px 14px">
+      ${kv('0~4점','조치 없음')}
+      ${kv('5~7점','1호 학교에서의 봉사')}
+      ${kv('8~10점','2호 사회봉사')}
+      ${kv('점수 없음','3호 특별교육 또는 심리치료 (단독 또는 1·2호에 덧붙임, 4·5·6호에는 반드시 덧붙임)')}
+      ${kv('11~13점','4호 출석정지')}
+      ${kv('14~16점','5호 학급교체')}
+      ${kv('17~21점','6호 전학, 7호 퇴학(의무교육 과정 학생은 퇴학 불가)')}
+    </div>
+    <ul class="plain small">
+      <li>전학·퇴학은 처음 일어난 사안에는 정할 수 없고, 같은 학교에서 출석정지·학급교체를 받았던 학생이 다시 침해했을 때만 가능합니다. 다만 상해·폭행, 성폭력범죄, 공포심을 주는 불법정보 유통은 처음이라도 가능합니다.</li>
+      <li>학생이 특별교육·심리치료를 받을 때 보호자도 함께 참여해야 합니다.</li>
+    </ul>
+    <h3>3. 보호자 등에 대한 조치</h3>
+    <p class="small">같은 방식으로 점수를 정합니다(반성 정도, 관계 회복 정도).</p>
+    <div class="card" style="margin:10px 0;padding:12px 14px">
+      ${kv('0~4점','조치 없음')}
+      ${kv('5~11점','1호 서면사과 및 재발방지 서약')}
+      ${kv('12~21점','2호 교육감이 정하는 기관에서의 특별교육 이수 또는 심리치료')}
+    </div>
+    <ul class="plain small">
+      <li>피해 교원이 임신했거나 장애가 있으면 1단계 가중, 보호자가 등록 장애인이면 1단계 감경할 수 있습니다.</li>
+      <li>정당한 사유 없이 특별교육·심리치료에 참여하지 않으면 300만 원 이하 과태료가 부과될 수 있습니다.</li>
+    </ul>
+    <h3>4. 그 밖에</h3>
+    <ul class="plain small">
+      <li>위원회는 필요하면 피해 교원 보호조치를 권고합니다.</li>
+      <li>조치에 이의가 있으면 행정심판(안 날부터 90일)이나 행정소송(안 날부터 90일)을 낼 수 있고, 교원은 ‘침해사안 아님’ 결정에 행정심판을 청구할 수 있습니다.</li>
+    </ul>
+    <div class="ref">${ref('50~55')}, 59~60쪽</div>
+  </div></details>`;
+}
+
+/* ========== 날짜 계산 ========== */
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function parseDate(s){ if(!s) return null; const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return null; return new Date(+m[1], +m[2]-1, +m[3]); }
+function addDays(d, n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function isOff(d){ const w = d.getDay(); return w===0 || w===6 || !!HOLIDAYS[ymd(d)]; }
+function addBizDays(d, n){ let x = new Date(d), c = 0; while(c<n){ x = addDays(x,1); if(!isOff(x)) c++; } return x; }
+const WD = ['일','월','화','수','목','금','토'];
+function fmt(d){ return `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.(${WD[d.getDay()]})`; }
+function hm(d){ return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function calcDeadlines(dlo){
+  const out = [];
+  if(!dlo || !dlo.recv) return {out, warn:''};
+  const recvDT = new Date(dlo.recv);
+  if(isNaN(recvDT)) return {out, warn:''};
+  const recv = parseDate(dlo.recv);
+  const r24 = new Date(recvDT.getTime() + 24*3600*1000);
+  out.push({k:'교육지원청 보고', v:`${fmt(r24)} ${hm(r24)}까지`, s:'접수 후 24시간', d:r24});
+  const sep = addDays(recv,6);
+  out.push({k:'분리조치 권장 최대 기간', v:`${fmt(sep)}까지`, s:'접수일에 결정했다고 가정, 첫날·휴일 포함 7일', d:sep});
+  const rep5 = addBizDays(recv, 5);
+  out.push({k:'사안 발생보고서 제출', v:fmt(rep5)+'까지', s:'보고 후 5일, 주말·공휴일 제외', d:rep5});
+  const repBase = parseDate(dlo.report) || rep5;
+  const com21 = addDays(repBase,21);
+  out.push({k:'지역교권보호위원회 개최', v:fmt(com21)+'까지', s:(dlo.report?'발생보고서 제출일':'발생보고서 기한')+'부터 21일, 주말·공휴일 포함, 불가피하면 연장 가능', d:com21});
+  const com = parseDate(dlo.committee);
+  if(com){ const n14 = addDays(com,14); out.push({k:'조치 결과 통지', v:fmt(n14)+'까지', s:'위원회 조치 요청 후 14일, 주말·공휴일 포함', d:n14}); }
+  const notice = parseDate(dlo.notice);
+  if(notice){
+    const n90 = addDays(notice,90);
+    out.push({k:'미이행 여부 점검·보고', v:fmt(n90)+' 이후', s:'통지받은 날부터 90일이 지나도 미이행이면 명단 보고', d:n90});
+    out.push({k:'행정심판 청구 기한(관련자 안내용)', v:fmt(n90)+'까지', s:'처분이 있음을 안 날부터 90일, 있은 날부터 180일 중 먼저 끝나는 날', d:n90});
+  }
+  const y = recv.getFullYear(), lastY = (notice||com||repBase).getFullYear();
+  const warn = (!HOLIDAY_YEARS.includes(y) || !HOLIDAY_YEARS.includes(lastY)) ? `${HOLIDAY_YEARS.join('·')}년 밖의 날짜는 공휴일이 반영되지 않습니다. 코드의 HOLIDAYS 목록에 추가하세요.` : '';
+  return {out, warn};
+}
+function updateDeadlines(){
+  const el = document.getElementById('dlOut'); if(!el) return;
+  const {out, warn} = calcDeadlines(curCase().dl);
+  if(!out.length){ el.innerHTML = '<p class="small muted" style="margin:8px 0 0">접수 일시를 넣으면 단계별 기한이 나타납니다.</p>'; return; }
+  el.innerHTML = `<div class="dl-list">${out.map(o=>`<div class="dl-item"><span><span class="k">${esc(o.k)}</span><span class="s">${esc(o.s)}</span></span><span class="v">${esc(o.v)}</span></div>`).join('')}</div>${warn?`<div class="note small">${esc(warn)}</div>`:''}`;
+}
+
+/* ========== 연락처 ========== */
+function viewContacts(){
+  const r = regionOf(region);
+  return `<div class="card">
+    <div class="region" style="margin:0 0 6px"><span style="white-space:nowrap">근무 지역</span> ${regionSelect('regionSel2')}</div>
+    ${r?`<h3>${esc(r.n)} 교육활동보호</h3>
+    <div class="call"><span class="who">교육활동보호 대표번호<small>업무시간에 연결</small></span>${telLink(hotline(r))}</div>
+    <div class="call"><span class="who">${esc(r.center)}</span>${telLink(r.tel)}</div>
+    <div class="call"><span class="who">긴급 범죄 신고</span>${telLink('112','red')}</div>
+    ${r.site?`<div class="call"><span class="who">누리집</span><a class="link" href="${r.site}" target="_blank" rel="noopener">${esc(r.site.replace(/^https?:\/\//,'').replace(/\/$/,''))}</a></div>`:''}`
+    :`<p class="small muted">근무 지역을 고르면 그 지역 교육활동보호센터가 먼저 나옵니다. 어느 지역이든 <b>지역번호 + 1395</b>로 걸면 교육청 교육활동보호 창구로 연결됩니다.</p>
+    <div class="call"><span class="who">긴급 범죄 신고</span>${telLink('112','red')}</div>`}
+  </div>
+  <details><summary>전국 시·도 교육활동보호센터</summary><div class="inner">
+    ${REGIONS.filter(x=>x.id!==region).map(x=>`<div class="call"><span class="who">${x.n}<small>${esc(x.center)} · ${x.area}-1395</small></span>${telLink(x.tel)}</div>`).join('')}
+    <div class="call"><span class="who">한국교육개발원 교육활동보호센터</span><a class="link" href="https://forteacher.kedi.re.kr" target="_blank" rel="noopener">forteacher.kedi.re.kr</a></div>
+    <div class="ref">${ref('center','2026년 1월 기준')}</div>
+  </div></details>`;
+}
+
+/* ========== 피해 교원 안내 ========== */
+function viewTeacher(){
+  return `
+  <h1>피해 교원 안내</h1>
+  <p class="lead">많이 놀라셨을 겁니다. 혼자 감당하지 않으셔도 됩니다. 침해행위인지 확실하지 않아도 신고하고 상담받을 수 있습니다.</p>
+  <div class="now urgent"><h3>${ic('alert')} 지금 할 일</h3><ol>
+    <li>멈춰 달라고 분명히 말하세요.</li>
+    <li><b>옆 반 선생님이나 교무실에 도움을 청하거나</b>, 그 자리를 벗어나세요.</li>
+    <li>몸이 위험하면 <b>112</b>에 신고하세요.</li>
+    <li>진정된 뒤에는 교감·교장이나 담당자에게 알리세요. <b>말로도 신고할 수 있습니다.</b> 가해자와 떨어져 있고 싶다면 아래 방법으로 <b>분리</b>를 요청하세요.</li>
+  </ol></div>
+  <section class="card" id="sep"><h3>분리 요청 방법</h3><ul class="plain">
+    <li>교감·교장이나 담당자에게 “즉시 분리를 원합니다”라고 말하고, <b>즉시 분리 의사 확인서</b>(서식3)를 작성합니다.</li>
+    <li>선생님이 반대하지 않으면 학교장은 가해자와 선생님을 <b>즉시 분리해야 합니다</b>(교원지위법 제20조제2항).</li>
+    <li>기간은 최대 7일을 권장하며, 그동안 학생은 별도 공간에서 학습합니다. 쉬는 시간·점심시간 동선도 나눕니다.</li>
+    <li>특별휴가·병가로 이미 떨어져 있다면 따로 분리하지 않을 수 있습니다.</li>
+  </ul><div class="ref">${ref('separate')}</div></section>
+  <section class="card"><h3>이어서 할 일</h3><ul class="plain">
+    <li>있었던 일을 날짜·시간·장소, 말과 행동 순서로 적어 두세요. <button class="linkbtn" data-action="nav" data-to="record">사건 기록하기</button></li>
+    <li>문자·사진·진단서 등 자료는 지우지 말고 보관하세요.</li>
+    <li>위원회 개최를 원하면 <b>사안 신고서</b>(서식1)를 직접 작성해 내야 합니다. 사건 기록 초안을 옮겨 적으면 됩니다.</li>
+  </ul><div class="ref">${ref(37)}, 41쪽</div></section>
+
+  <h2>받을 수 있는 지원</h2>
+  <details open><summary>특별휴가·병가</summary><div class="inner"><ul class="plain">
+    <li><b>특별휴가</b> 5일 범위. 상해·폭행이나 성폭력범죄면 5일 범위에서 더 받을 수 있습니다.</li>
+    <li>사안 직후에 <b>연속으로</b> 쓰는 것이 원칙입니다. 나눠 쓰거나 한 달 뒤에 쓰는 것은 적절하지 않습니다. 위원회 개최 전에도 학교장이 허가할 수 있습니다.</li>
+    <li>특별휴가 후에도 쉬어야 하면 <b>공무상 병가</b>(학교장 판단 6일 이내), 요양이 필요하면 공무원연금공단에 <b>공무상 요양</b>(연 180일 범위)을 신청할 수 있습니다.</li>
+    <li>기간제 교원은 산재보험, 사립학교 교원은 사학연금으로 요양급여를 받을 수 있습니다.</li>
+    <li>위원회에서 침해행위가 아니라고 결정되면 특별휴가는 병가·연가로 바뀝니다.</li>
+  </ul><div class="ref">${ref('70~72')}</div></div></details>
+  <details><summary>심리상담·치료비</summary><div class="inner"><ul class="plain">
+    <li>교육활동보호센터 전담상담사의 전화·대면 상담을 받을 수 있고, 필요하면 전문기관·정신건강의학과로 연계됩니다.</li>
+    <li>치료·요양·의약품 비용은 <b>침해행위를 한 학생의 보호자 등이 부담</b>하는 것이 원칙입니다. 빨리 치료받아야 하면 교육청이 먼저 내고 나중에 ${gl('구상')}합니다.</li>
+    <li>비용 부담 신청은 신청서와 증빙자료를 교육감에게 제출합니다.</li>
+  </ul><div class="ref">${ref('70, 73')}</div></div></details>
+  <details><summary>교원보호공제</summary><div class="inner">
+    <p class="small muted">표준약관 기준이며 시·도별로 다를 수 있습니다.</p>
+    <div class="kv"><b>상해치료·심리상담</b><span>치료·요양·심리상담 비용 총 300만 원 한도</span></div>
+    <div class="kv"><b>민형사 소송비용</b><span>교육활동 관련 법적 분쟁의 소송비용 지원</span></div>
+    <div class="kv"><b>재산상 피해</b><span>소지품 훼손 시 물품당 200만 원 한도</span></div>
+    <div class="kv"><b>위협대처(경호)</b><span>폭행·상해 등 중대사안 시 긴급 경호, 1사고당 20일</span></div>
+    <div class="kv"><b>분쟁조정</b><span>변호사 등의 분쟁조정 서비스</span></div>
+    <div class="ref">${ref('mutual')}</div></div></details>
+  <details><summary>법률 지원과 그 밖의 제도</summary><div class="inner"><ul class="plain">
+    <li><b>법률지원단</b> 변호사 등에게 법률 상담을 받을 수 있습니다.</li>
+    <li><b>고소·민사소송</b> 범죄라면 직접 고소할 수 있고, 피해에 대해 손해배상을 청구할 수 있습니다.</li>
+    <li><b>아동학대로 신고된 경우</b> 교육감이 정당한 생활지도였는지 의견을 조사·수사기관에 냅니다. 정보공개청구로 신고 내용을 확인하고 자료를 교육지원청에 내어 협조할 수 있습니다.</li>
+    <li><b>전보</b> 원하면 학교장이 시·도교육청 기준에 따라 전보를 요청할 수 있습니다.</li>
+    <li>${gl('<b>분쟁조정</b> 양측이 원하면 위원회가 조정해 합의서를 작성합니다(개시 후 30일).')}</li>
+  </ul><div class="ref">${ref('71, 77~83')}</div></div></details>
+
+  <h2>연락처</h2>
+  ${viewContacts()}
+  ${footer()}`;
+}
+
+/* ========== 유형 둘러보기 ========== */
+function viewTypes(){
+  const row = ([n,t]) => `<details><summary><span class="small muted" style="min-width:1.6em">${n}</span>${esc(t.name)}</summary><div class="inner">
+    <p class="small"><b>근거</b> ${esc(t.law)}</p><p>${gl(esc(t.concept))}</p><p class="small"><b>예시</b> ${esc(t.example)}</p>${t.cases?`<p class="small"><b>매뉴얼 사례</b> ${esc(t.cases)}</p>`:''}
+    <div class="ref">${ref(t.page,'Ⅴ장')}</div></div></details>`;
+  const e = Object.entries(TYPES);
+  return `<h1>침해 유형 16가지</h1>
+  <p class="lead">「교원지위법」 제19조와 「교육활동 침해행위 및 조치 기준에 관한 고시」 제2조의 유형입니다. 밑줄 친 말을 누르면 뜻이 나옵니다.</p>
+  <h2>범죄 행위</h2>${e.slice(0,9).map(row).join('')}
+  <h2>교육활동을 부당하게 간섭하거나 제한하는 행위</h2>${e.slice(9).map(row).join('')}
+  <h2>위원회는 어떻게 판단하나요</h2>${committeeHtml()}
+  <div class="btn-row"><button class="btn" data-action="startCheck">${ic('search')} 내 사례 점검하기</button></div>
+  ${footer()}`;
+}
+
+/* ========== 인쇄용 한 장 ========== */
+function viewPrint(){
+  const c = curCase();
+  const out = calcDeadlines(c.dl).out; const map = {}; out.forEach(o=>map[o.k]=o.v);
+  const recvTxt = c.dl.recv ? fmtDT(c.dl.recv) : '';
+  const line = v => v ? `<b>${esc(v)}</b>` : '____________________';
+  return `
+  <h1>인쇄용 한 장</h1>
+  <p class="lead">‘${esc(c.name)}’의 담당자 체크리스트를 A4 한 장에 담았습니다. 접수 일시를 넣었다면 기한도 함께 인쇄됩니다.</p>
+  <div class="btn-row"><button class="btn" data-action="print">${ic('print')} 인쇄하기</button><button class="btn ghost" data-action="back">${ic('arrowL')} 돌아가기</button></div>
+  <p class="preview-note">미리보기는 실제 A4 크기입니다. 휴대폰에서는 옆으로 밀어 보세요.</p>
+  <div class="preview-wrap"><div id="printSheet" class="print-area">
+    <h1>교육활동 침해 사안 담당자 체크리스트</h1>
+    <div class="ps-meta"><span>사안: <b>${esc(c.name)}</b></span><span>접수 일시: ${line(recvTxt)}</span><span>담당자: ____________</span></div>
+    <div class="ps-grid">
+      ${STEPS.map((s,i)=>`<div class="ps-step"><div class="h">${i+1}. ${esc(s.title)}<span>${esc(s.dl)}</span></div>
+        ${map[s.dlKey] && i>0 ? `<div class="ps-dl">기한: ${esc(map[s.dlKey])}</div>` : ''}
+        <ul>${visTodos(s,c).map(t=>`<li>${c.checks[t[0]]?'☑':'☐'} ${esc(t[3])}${isRel(t,c)?' ★':''}</li>`).join('')}</ul>
+        <div class="ps-f">서식: ${s.forms.map(n=>'서식'+n).join(', ')}</div></div>`).join('')}
+      <div class="ps-step"><div class="h">하지 말아야 할 것</div><ul>${DONTS.map(d=>`<li>✕ ${esc(d)}</li>`).join('')}</ul></div>
+    </div>
+    <div class="ps-bottom"><b>갈림길</b> 위원회 미희망 → 양측 사안 종결 확인서(서식8), 이후 같은 사안 심의 요청 불가 · 오인 신고 → 피해교원 종결신청서 · 상해·폭행·성폭력 → 학교장 긴급조치 가능(위원회 즉시 보고·추인), 특별휴가 5일 추가 가능<br>
+    <b>분리조치</b> 피해교원 의사 확인 → 최대 7일 권장(첫날·휴일 포함) → 관련 학생(보호자) 통보, 학습권 보장<br>
+    <b>서식</b> 매뉴얼 부록 4 「각종 서식」(${MANUAL.pages.forms}쪽~) · ${caseFlags(c) && c.result ? '★ 점검 결과 관련 할 일 · ' : ''}<b>연락처</b> ${regionOf(region)?`${esc(regionOf(region).n)} 교육활동보호 ${hotline(regionOf(region))} · ${esc(regionOf(region).tel)}`:'지역번호+1395'} · 긴급 112</div>
+    <div class="ps-src">출처: ${esc(SOURCE_TEXT)} 7, 29~65쪽(교육부 누리집 게시) · 참고용이며 최종 판단은 지역교권보호위원회가 합니다.</div>
+  </div></div>`;
+}
+
+/* ========== 파일 저장 ========== */
+function download(name, text, type){
+  try{
+    const blob = new Blob([text], {type});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    return true;
+  }catch(e){ toast('이 환경에서는 파일을 저장할 수 없습니다'); return false; }
+}
+const safeName = s => String(s).replace(/[\\/:*?"<>|]/g,'_').slice(0,40);
+
+/* ========== 용어 상자 ========== */
+function openTerm(k){ const b = document.getElementById('termBox'); document.getElementById('termTxt').innerHTML = `<b>${esc(k)}</b>${esc(GLOSS[k]||'')}`; b.classList.add('on'); }
+function closeTerm(){ const b = document.getElementById('termBox'); if(b) b.classList.remove('on'); }
+
+/* ========== 저작권 안내 ========== */
+function copyHtml(){
+  return `<div class="mh"><h2 id="copyTitle">저작권 안내</h2><button data-action="closeCopy" aria-label="닫기">×</button></div>
+  <dl>
+    <dt>아이디어와 제작</dt>
+    <dd>이 사이트의 아이디어·기획·구성은 최창훈의 것입니다. © 2026 최창훈</dd>
+    <dt>사이트 코드와 글꼴</dt>
+    <dd>HTML·CSS·JavaScript는 이 사이트를 위해 새로 작성했습니다. 외부 라이브러리, 웹폰트, 이미지를 불러오지 않으므로 별도로 고지할 오픈소스 라이선스가 없습니다. 글자는 사용자 기기에 설치된 기본 글꼴로 표시됩니다.</dd>
+    <dt>아이콘과 기호</dt>
+    <dd>아이콘은 이 사이트를 위해 직접 그린 단순한 도형(SVG)입니다. ☐ ★ → 「」 같은 기호는 유니코드 문자이며, 이모지 이미지는 쓰지 않았습니다.</dd>
+    <dt>참고 자료</dt>
+    <dd>판별 기준, 사례, 대응 절차는 ${esc(SOURCE_TEXT)}를 요약·재구성한 것입니다.<br>
+      <span class="kogl">${esc(SOURCE.kogl)}</span><br>
+      교육부가 창작한 이 저작물은 위 조건에 따라 출처를 밝히고 비영리로 이용합니다. <a href="${SOURCE.url}" target="_blank" rel="noopener">원문 보기</a></dd>
+    <dt>법령과 판례</dt>
+    <dd>법령·고시·판결은 저작권법 제7조에 따라 보호받지 않는 저작물입니다. 교육활동보호센터 연락처와 공휴일은 사실 정보입니다.</dd>
+    <dt>공식 서비스 아님</dt>
+    <dd>${esc(UNOFFICIAL)} 교육부 로고나 상징은 쓰지 않았습니다.</dd>
+  </dl>
+  <div class="btn-row" style="margin:18px 0 0"><button class="btn ghost" data-action="closeCopy">닫기</button></div>`;
+}
+let copyReturn = null;
+function openCopy(){ const m = document.getElementById('copyModal'); document.getElementById('copyBox').innerHTML = copyHtml(); copyReturn = document.activeElement; m.classList.add('on'); const c = m.querySelector('[data-action=closeCopy]'); if(c) c.focus(); }
+function closeCopy(){ const m = document.getElementById('copyModal'); if(!m.classList.contains('on')) return; m.classList.remove('on'); if(copyReturn && copyReturn.focus) copyReturn.focus(); }
+
+/* ========== 이벤트 ========== */
+document.addEventListener('click', e=>{
+  const term = e.target.closest('.term'); if(term){ e.preventDefault(); openTerm(term.dataset.term); return; }
+  if(!e.target.closest('#termBox')) closeTerm();
+  document.querySelectorAll('details.kebab[open]').forEach(k=>{ if(!k.contains(e.target) || e.target.closest('.menu-pop button')) k.removeAttribute('open'); });
+  const b = e.target.closest('[data-action]'); if(!b || b.disabled) return;
+  const a = b.dataset.action, st = curState;
+  if(a==='home') go('home');
+  else if(a==='nav') go(b.dataset.to, 0, b.dataset.anchor ? {anchor:b.dataset.anchor} : {});
+  else if(a==='back') goBack();
+  else if(a==='closeTerm') closeTerm();
+  else if(a==='openCopy') openCopy();
+  else if(a==='toCalc'){ const el = document.getElementById('calc'); if(el){ el.scrollIntoView({block:'start'}); const i = document.getElementById('dlRecv'); if(i) setTimeout(()=>i.focus(), 300); } }
+  else if(a==='closeCopy') closeCopy();
+  else if(a==='startCheck'){ if(hasAnswers()) go('resume'); else go('check', 0); }
+  else if(a==='resumeCheck'){ const u = firstUnanswered(); if(u<0) go('result'); else go('check', u); }
+  else if(a==='newCheck'){ resetAnswers(); go('check', 0); }
+  else if(a==='restart'){ resetAnswers(); go('check', 0); }
+  else if(a==='answer'){
+    const id = b.dataset.id, v = b.dataset.v;
+    if(id==='ctx' || id==='actor'){
+      if(id==='actor' && answers.actor!==v){ answers.acts = answers.acts.filter(x=>{ const o=ACTS.find(y=>y.v===x); return !o.only || o.only===v; }); }
+      answers[id] = v;
+    }else answers.q[id] = v;
+    saveAnswers(); render(st);
+  }
+  else if(a==='toggleAct'){
+    const v = b.dataset.v; const i = answers.acts.indexOf(v);
+    openGroups.add(ACTS.find(x=>x.v===v).g);
+    if(i>=0) answers.acts.splice(i,1); else answers.acts.push(v);
+    saveAnswers(); const y = window.scrollY; render(st); window.scrollTo(0,y);
+  }
+  else if(a==='next') nextStep(st.step||0, !!st.edit);
+  else if(a==='edit'){ const i = getQueue().indexOf(b.dataset.q); go('check', i<0?0:i, {edit:true}); }
+  else if(a==='copyResult') copyText(resultText(), '결과를 복사했습니다');
+  else if(a==='linkCase'){ const c = curCase(); c.result = resultSnapshot(); touchCase(); go('guide'); toast(`‘${c.name}’에 점검 결과를 연결했습니다`); }
+  else if(a==='linkCaseHere'){ const c = curCase(); c.result = resultSnapshot(); touchCase(); render(st); toast('점검 결과를 연결했습니다'); }
+  else if(a==='unlinkCase'){ const c = curCase(); c.result = null; touchCase(); render(st); }
+  else if(a==='tab'){ const i = +b.dataset.i; if(i>=0 && i<STEPS.length){ const c = curCase(); c.tab = i; saveStore(); render(st);
+      const t = document.querySelector('.tabs'); if(t) window.scrollTo(0, Math.max(0, t.getBoundingClientRect().top + window.scrollY - document.getElementById('hdr').offsetHeight - 8)); } }
+  else if(a==='resetChecks'){
+    const c = curCase();
+    if(!Object.keys(c.checks).length){ toast('지울 체크 표시가 없습니다'); return; }
+    if(!confirm(`‘${c.name}’의 체크 표시를 모두 지울까요?`)) return;
+    c.checks = {}; touchCase(); render(st); toast('체크 표시를 모두 지웠습니다');
+  }
+  else if(a==='newCase'){
+    const name = prompt('새 사안의 이름을 적어 주세요. (예: 10월 A건)\n학생·보호자 이름은 적지 마세요.', `사안 ${store.list.length+1}`);
+    if(name===null) return; const c = newCaseObj(name.trim()||`사안 ${store.list.length+1}`);
+    store.list.push(c); store.cur = c.id; saveStore(); render(st);
+  }
+  else if(a==='renameCase'){ const c = curCase(); const name = prompt('사안 이름', c.name); if(name===null || !name.trim()) return; c.name = name.trim(); touchCase(); render(st); }
+  else if(a==='delCase'){
+    const c = curCase(); if(!confirm(`‘${c.name}’을(를) 이 탭에서 지울까요? 저장한 사안 파일은 그대로 남습니다.`)) return;
+    store.list = store.list.filter(x=>x.id!==c.id);
+    if(!store.list.length){ const n = newCaseObj('사안 1'); store.list.push(n); }
+    store.cur = store.list[0].id; saveStore(); render(st);
+  }
+  else if(a==='exportCase'){
+    const c = curCase();
+    const data = {app:'edu-protection-checker', version:1, savedAt:new Date().toISOString(), case:{name:c.name, checks:c.checks, dl:c.dl, tab:c.tab, result:c.result}};
+    if(download(`교육활동침해_${safeName(c.name)}_${ymd(new Date())}.json`, JSON.stringify(data, null, 2), 'application/json')){ c.changed = false; saveStore(); render(st); toast('사안 파일을 저장했습니다'); }
+  }
+  else if(a==='importCase') document.getElementById('importFile').click();
+  else if(a==='nowDT'){ const x = rec.incidents.find(i=>i.id===b.dataset.inc); if(x){ const d = new Date(); x.dt = ymd(d)+'T'+hm(d); saveRec(); const y = window.scrollY; render(st); window.scrollTo(0,y); } }
+  else if(a==='addInc'){ rec.incidents.push(blankInc()); saveRec(); render(st); }
+  else if(a==='delInc'){ if(!confirm('이 사건 기록을 지울까요?')) return; rec.incidents = rec.incidents.filter(x=>x.id!==b.dataset.id); saveRec(); render(st); }
+  else if(a==='copyRec') copyText(recText(), '초안을 복사했습니다');
+  else if(a==='saveRec') download(`교육활동침해_사건기록_${ymd(new Date())}.txt`, '﻿'+recText(), 'text/plain;charset=utf-8');
+  else if(a==='clearRec'){ if(!confirm('사건 기록을 모두 지울까요?')) return; rec = {incidents:[blankInc()], wants:[]}; saveRec(); render(st); }
+  else if(a==='print') window.print();
+});
+document.addEventListener('toggle', e=>{
+  const d = e.target; if(d.dataset && d.dataset.group){ if(d.open) openGroups.add(d.dataset.group); else openGroups.delete(d.dataset.group); }
+}, true);
+function copyText(txt, msg){
+  const done = ()=>toast(msg);
+  if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt, done));
+  else fallbackCopy(txt, done);
+}
+function fallbackCopy(txt, done){
+  const ta = document.createElement('textarea'); ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(err){ toast('복사하지 못했습니다'); } document.body.removeChild(ta);
+}
+function onField(e){
+  const t = e.target;
+  if(t.matches('[data-dl]')){ const c = curCase(); c.dl[t.dataset.dl] = t.value; touchCase(); updateDeadlines();
+    if(e.type==='change'){ const y = window.scrollY; render(curState); window.scrollTo(0,y); } return; }
+  if(t.matches('[data-rec]')){ const x = rec.incidents.find(i=>i.id===t.dataset.inc); if(x){ x[t.dataset.rec] = t.value; saveRec(); refreshRecDoc(); } return; }
+}
+document.addEventListener('input', onField);
+document.addEventListener('change', e=>{
+  const t = e.target;
+  if(t.matches('[data-check]')){ const c = curCase(); if(t.checked) c.checks[t.dataset.check] = 1; else delete c.checks[t.dataset.check]; touchCase();
+    const y = window.scrollY; render(curState); window.scrollTo(0,y); return; }
+  if(t.matches('[data-region]')){ region = t.value; LS.set('ep_region', region); const y = window.scrollY; render(curState); window.scrollTo(0,y); return; }
+  if(t.matches('[data-case]')){ store.cur = t.value; saveStore(); render(curState); return; }
+  if(t.matches('[data-recev]')){ const x = rec.incidents.find(i=>i.id===t.dataset.inc); if(x){ const v = t.dataset.recev; x.evidence = t.checked ? [...new Set([...x.evidence, v])] : x.evidence.filter(z=>z!==v); saveRec(); refreshRecDoc(); } return; }
+  if(t.matches('[data-want]')){ const v = t.dataset.want; rec.wants = t.checked ? [...new Set([...rec.wants, v])] : rec.wants.filter(z=>z!==v); saveRec(); refreshRecDoc(); return; }
+  if(t.id==='importFile'){
+    const f = t.files && t.files[0]; if(!f) return;
+    const rd = new FileReader();
+    rd.onload = ()=>{
+      try{
+        const data = JSON.parse(rd.result);
+        if(data.app!=='edu-protection-checker' || !data.case) throw new Error('형식');
+        const c = newCaseObj(String(data.case.name||'불러온 사안'));
+        c.checks = data.case.checks||{}; c.dl = Object.assign(blankDl(), data.case.dl||{}); c.tab = +data.case.tab||0; c.result = data.case.result||null; c.changed = false;
+        store.list.push(c); store.cur = c.id; saveStore(); render(curState); toast(`‘${c.name}’을(를) 불러왔습니다`);
+      }catch(err){ toast('이 도구에서 저장한 사안 파일이 아닙니다'); }
+      t.value = '';
+    };
+    rd.readAsText(f);
+    return;
+  }
+  onField(e);
+});
+window.addEventListener('beforeunload', e=>{
+  if(store.list.some(c=>c.changed && caseHasContent(c))){ e.preventDefault(); e.returnValue = ''; }
+});
+window.addEventListener('resize', setHdr);
+document.getElementById('copyModal').addEventListener('click', e=>{ if(e.target.id==='copyModal') closeCopy(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeCopy(); closeTerm(); } });
+
+/* ========== 시작 ========== */
+(function init(){
+  let st = null;
+  try{ st = history.state; }catch(e){ useHistory = false; }
+  if(st && st.screen && st.screen !== '__guard'){ curState = st; render(st); }
+  else{ hist('replaceState', {screen:'__guard'}); hist('pushState', {screen:'home',step:0}); curState = {screen:'home',step:0}; render(curState); }
+})();
+</script>
+</body>
+</html>
