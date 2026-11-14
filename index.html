@@ -341,6 +341,9 @@ body.with-bar .modal{position:fixed;inset:0;z-index:70;background:rgba(24,33,43,
   .doc.print-area{font-size:10.5pt;padding:0}
   header.top,.toast,.bar,#termBox,.copy-btn,.modal{display:none!important}
 }
+/* 학교 연장통 바로가기로 찾아온 자리 표시 */
+.qfind{animation:qfind 1.2s 3;border-radius:10px;scroll-margin-top:calc(var(--hdr, 60px) + 20px)}
+@keyframes qfind{0%,40%{box-shadow:0 0 0 4px rgba(33,96,196,.4)}100%{box-shadow:0 0 0 0 rgba(33,96,196,0)}}
 </style>
 </head>
 <body>
@@ -1751,6 +1754,44 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeCopy(); clo
   try{ st = history.state; }catch(e){ useHistory = false; }
   if(st && st.screen && st.screen !== '__guard'){ curState = st; render(st); }
   else{ hist('replaceState', {screen:'__guard'}); hist('pushState', {screen:'home',step:0}); curState = {screen:'home',step:0}; render(curState); }
+})();
+
+/* ========== 학교 연장통 바로가기(?q=낱말) ==========
+   그 말이 나오는 화면(유형·담당자 절차·교원 지원·기록·첫 화면)을 열고, 접힌 칸을 펴서 그 자리를 표시합니다.
+   주소의 ?q= 는 지웁니다(해시 없음). 뒤로가기를 누르면 첫 화면으로 돌아갑니다. */
+(function findOnOpen(){
+  let q = '';
+  try{ q = (new URLSearchParams(location.search).get('q') || '').trim(); }catch(e){}
+  if(!q) return;
+  try{ history.replaceState(history.state, '', location.pathname); }catch(e){}
+  const norm = t => String(t).toLowerCase().replace(/\s+/g, '');
+  const words = q.split(/\s+/).filter(w => w.length >= 2).sort((a, b) => b.length - a.length);
+  const tries = [norm(q), ...words.map(norm)].filter((w, i, a) => w && a.indexOf(w) === i);
+  const home = curState;
+  const order = ['types', 'guide', 'teacher', 'record', 'home'];
+  const inCheck = qn => norm(JSON.stringify(Q) + JSON.stringify(ACTS)).includes(qn);
+  for(const qn of tries){
+  for(const scr of order){
+    render({screen:scr, step:0});
+    if(!norm(app.textContent).includes(qn)) continue;
+    if(scr === 'home') render(home); else go(scr, 0);
+    let hit = null;
+    const walk = document.createTreeWalker(app, NodeFilter.SHOW_ELEMENT);
+    for(let n; (n = walk.nextNode());) if(!/^(SCRIPT|STYLE|SELECT|OPTION|BUTTON)$/.test(n.tagName) && norm(n.textContent).includes(qn)) hit = n;
+    if(!hit) return;
+    for(let d = hit.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) d.open = true;
+    const target = hit.closest('li, tr, p, details, .card, section, div') || hit;
+    setTimeout(() => {
+      target.scrollIntoView({block:'center'});
+      target.classList.add('qfind');
+      setTimeout(() => target.classList.remove('qfind'), 4000);
+    }, 60);
+    return;
+  }
+  /* 판별 질문에만 있는 말 → 판별 시작 */
+  if(inCheck(qn)){ render(home); go('check', 0); return; }
+  }
+  render(home);
 })();
 </script>
 </body>
